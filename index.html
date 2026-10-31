@@ -1,0 +1,1457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23141A2E%27/%3E%3Crect x=%277%27 y=%278%27 width=%2711%27 height=%2716%27 rx=%273%27 fill=%27%23F26B3A%27/%3E%3Crect x=%2714%27 y=%278%27 width=%2711%27 height=%2716%27 rx=%273%27 fill=%27%233D6BE0%27/%3E%3C/svg%3E">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>SwapMate</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@500&family=Rubik:wght@500;600;700&display=swap">
+<style>
+/* Layout: app shell. Left rail on desktop, bottom tab bar on phones; content sits in a 1180px column.
+   Palette: deep navy ink, cool grey ground, trade-orange for "swap" actions, trust-blue for verification. */
+:root{
+  --bg:#F2F3F7; --surface:#FFFFFF; --surface-2:#E9EBF2; --ink:#141A2E; --ink-2:#465069; --muted:#6E7690; --line:#DADEE8;
+  --accent:#F26B3A; --accent-ink:#141A2E; --accent-soft:#FDE5DA; --accent-text:#B3441A;
+  --trust:#2F5FD0; --trust-soft:#E1E9FB; --good:#157552; --good-soft:#DCF1E6; --warn:#8F5D00; --warn-soft:#FAEDD2; --bad:#B3302A; --bad-soft:#F7DFDC;
+  --btn:#141A2E; --btn-ink:#FFFFFF; --scrim:rgba(14,18,32,.52); --hero:#141A2E; --hero-fg:#FFFFFF;
+  --shadow:0 1px 2px rgba(20,26,46,.06),0 10px 28px rgba(20,26,46,.07);
+  --f-display:'Rubik',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-body:'DM Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:14px; --r-sm:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1020; --surface:#151A2C; --surface-2:#1D2338; --ink:#ECEEF6; --ink-2:#B3B9CF; --muted:#8990AA; --line:#283049;
+    --accent:#FF8452; --accent-ink:#141A2E; --accent-soft:#3B2217; --accent-text:#FF9F78;
+    --trust:#89A8FF; --trust-soft:#1B2A4E; --good:#4DCB96; --good-soft:#133326; --warn:#E9B54C; --warn-soft:#3A2C11; --bad:#FF7B71; --bad-soft:#3E1A18;
+    --btn:#ECEEF6; --btn-ink:#0C1020; --scrim:rgba(0,0,0,.62); --hero:#232B48; --hero-fg:#F3F4FA;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1020; --surface:#151A2C; --surface-2:#1D2338; --ink:#ECEEF6; --ink-2:#B3B9CF; --muted:#8990AA; --line:#283049;
+  --accent:#FF8452; --accent-ink:#141A2E; --accent-soft:#3B2217; --accent-text:#FF9F78;
+  --trust:#89A8FF; --trust-soft:#1B2A4E; --good:#4DCB96; --good-soft:#133326; --warn:#E9B54C; --warn-soft:#3A2C11; --bad:#FF7B71; --bad-soft:#3E1A18;
+  --btn:#ECEEF6; --btn-ink:#0C1020; --scrim:rgba(0,0,0,.62); --hero:#232B48; --hero-fg:#F3F4FA;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 28px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:400 15px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--bg)}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;line-height:1.15;text-wrap:balance;color:var(--ink)}
+h1{font-size:clamp(24px,3.2vw,32px);font-weight:600;letter-spacing:-.01em}
+h2{font-size:20px;font-weight:600}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,select,textarea{font:inherit;color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--trust);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--f-mono);font-size:.82em;letter-spacing:0}
+.muted{color:var(--muted)}
+.eyebrow{font:600 12px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-text)}
+svg.lucide{width:18px;height:18px;stroke-width:2;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100dvh}
+.side{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;gap:6px;padding-block:22px 18px;padding-right:14px;padding-left:max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-right:1px solid var(--line);overflow-y:auto}
+.logo{display:flex;align-items:center;gap:10px;font:700 21px/1 var(--f-display);letter-spacing:-.02em;padding:4px 8px 18px}
+.logo-mark{width:34px;height:34px;border-radius:10px;background:var(--ink);position:relative;flex:none}
+.logo-mark::before,.logo-mark::after{content:"";position:absolute;width:13px;height:18px;border-radius:3px;top:8px}
+.logo-mark::before{left:7px;background:var(--accent);transform:rotate(-10deg)}
+.logo-mark::after{left:14px;background:var(--trust);transform:rotate(10deg);mix-blend-mode:normal;opacity:.95}
+.logo b{color:var(--accent-text);font-weight:700}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--ink-2);font-weight:500}
+.nav a:hover{background:var(--surface-2);color:var(--ink)}
+.nav a.on{background:var(--ink);color:var(--surface)}
+.nav a .count{margin-left:auto;font:600 12px var(--f-body);background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:1px 8px}
+.nav a.on .count{background:var(--accent)}
+.side .spacer{flex:1}
+.side-cta{margin:10px 0 6px}
+.me-mini{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;border:1px solid var(--line)}
+.me-mini .t{min-width:0;line-height:1.25}
+.me-mini .t b{display:block;font-weight:600}
+.me-mini .t span{font-size:12.5px;color:var(--muted)}
+.proto{font-size:12px;color:var(--muted);padding:8px 10px 0;display:flex;gap:6px;align-items:center}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);border-bottom:1px solid transparent}
+.topbar.scrolled{border-bottom-color:var(--line)}
+.topbar-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;padding-block:14px;padding-left:max(clamp(16px,3vw,32px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,3vw,32px),env(safe-area-inset-right,0px))}
+.m-logo{display:none}
+.search{flex:1;min-width:0;max-width:560px;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 6px 0 16px;height:44px}
+.search input{flex:1;min-width:0;border:0;background:transparent;outline:none;font-size:15px}
+.search input::placeholder{color:var(--muted)}
+.search .k{font:500 11.5px var(--f-mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.icon-btn{position:relative;width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
+.icon-btn:hover{color:var(--ink)}
+.dot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.content{width:100%;max-width:1180px;margin:0 auto;padding-block:8px 64px;padding-left:max(clamp(16px,3vw,32px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,3vw,32px),env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+
+.tabbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--surface);border-top:1px solid var(--line);padding-top:6px;padding-bottom:max(8px,env(safe-area-inset-bottom,0px));padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));justify-content:space-around;align-items:center}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:500;color:var(--muted);padding:4px 6px;min-width:56px;position:relative}
+.tabbar a.on{color:var(--ink)}
+.tabbar a .count{position:absolute;top:0;right:10px;font-size:10px;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:0 5px;font-weight:700}
+.tabbar .plus{width:48px;height:48px;border-radius:16px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;min-width:0;margin-top:-18px;box-shadow:var(--shadow)}
+.tabbar .plus svg.lucide{width:24px;height:24px}
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .tabbar{display:flex}
+  .m-logo{display:flex;padding:0}
+  .m-logo .logo-word{display:none}
+  .content{padding-bottom:110px}
+  .search .k{display:none}
+  .hide-m{display:none!important}
+}
+
+/* ---------- primitives ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 18px;border-radius:999px;font-weight:600;font-size:14.5px;white-space:nowrap;border:1px solid transparent;transition:transform .12s ease,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--btn);color:var(--btn-ink)}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-accent:hover{filter:brightness(1.04)}
+.btn-ghost{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-danger{background:var(--surface);border-color:var(--line);color:var(--bad)}
+.btn-sm{height:34px;padding:0 13px;font-size:13.5px}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-weight:500;font-size:13.5px;white-space:nowrap}
+.chip:hover{color:var(--ink)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.chip .n{font:500 11.5px var(--f-mono);opacity:.7}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.tag svg.lucide{width:13px;height:13px}
+.tag-match{background:var(--accent-soft);color:var(--accent-text)}
+.tag-trust{background:var(--trust-soft);color:var(--trust)}
+.tag-good{background:var(--good-soft);color:var(--good)}
+.tag-warn{background:var(--warn-soft);color:var(--warn)}
+.tag-bad{background:var(--bad-soft);color:var(--bad)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.more{font-weight:600;font-size:14px;color:var(--accent-text);display:inline-flex;align-items:center;gap:4px}
+.av{--av:#2F5FD0;display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--av);color:#fff;font:600 13px/1 var(--f-display);flex:none;letter-spacing:.02em}
+.av.sm{width:24px;height:24px;font-size:10px}
+.av.lg{width:64px;height:64px;font-size:22px}
+.vmark{color:var(--trust);display:inline-flex;vertical-align:-3px}
+.vmark svg.lucide{width:16px;height:16px}
+.stars{display:inline-flex;align-items:center;gap:3px;font-weight:600;font-variant-numeric:tabular-nums}
+.stars svg.lucide{width:14px;height:14px;color:var(--accent);fill:var(--accent)}
+.row{display:flex;align-items:center;gap:10px}
+.wrap{flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label,.lbl{font-size:13px;font-weight:600;color:var(--ink-2)}
+.input,.select,.textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none;font-size:15px}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--trust);box-shadow:0 0 0 3px var(--trust-soft)}
+.textarea{min-height:88px;resize:vertical}
+.hint{font-size:12.5px;color:var(--muted)}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:var(--ink-2);cursor:pointer;user-select:none}
+.toggle input{appearance:none;width:36px;height:20px;border-radius:999px;background:var(--line);position:relative;transition:background .15s;margin:0;cursor:pointer}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:left .15s}
+.toggle input:checked{background:var(--trust)}
+.toggle input:checked::after{left:18px}
+
+/* ---------- card art (generated, no artwork) ---------- */
+.art{position:relative;aspect-ratio:63/88;width:100%;max-width:100%;border-radius:11px;overflow:hidden;background:linear-gradient(155deg,var(--c1),var(--c2));color:#fff;isolation:isolate;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.art-frame{position:absolute;inset:5.5%;border-radius:7px;border:1.5px solid rgba(255,255,255,.55);display:flex;flex-direction:column;justify-content:space-between;padding:7%}
+.art-top,.art-bot{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.art-top{font:600 11px/1.2 var(--f-display)}
+.art-top .nm{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.art-r{font:500 9px/1 var(--f-mono);background:rgba(0,0,0,.28);padding:3px 5px;border-radius:4px;flex:none}
+.art-bot{font:500 9px/1.2 var(--f-mono);opacity:.92;align-items:flex-end}
+.art-emblem{align-self:center;width:58%;aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.85),rgba(255,255,255,.12) 36%,transparent 58%),repeating-radial-gradient(circle,rgba(255,255,255,.2) 0 2px,transparent 2px 9px);box-shadow:inset 0 0 26px rgba(0,0,0,.28),0 6px 18px rgba(0,0,0,.25)}
+.art-figure .art-frame{border-radius:3px;border-width:3px;border-color:rgba(255,255,255,.7)}
+.art-figure .art-emblem{width:44%;aspect-ratio:3/5;border-radius:45% 45% 10px 10px}
+.art-skin .art-emblem{width:44%;border-radius:10px;transform:rotate(45deg);background:linear-gradient(135deg,rgba(255,255,255,.75),rgba(255,255,255,.08) 55%),repeating-linear-gradient(45deg,rgba(255,255,255,.18) 0 3px,transparent 3px 10px)}
+.art-sealed .art-frame{border-style:dashed}
+.art-sealed .art-emblem{width:70%;aspect-ratio:5/4;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,.7) 0 14%,rgba(255,255,255,.12) 14% 100%),repeating-linear-gradient(90deg,rgba(255,255,255,.15) 0 2px,transparent 2px 12px)}
+.art-sports .art-emblem{width:66%;aspect-ratio:4/5;border-radius:10px;background:linear-gradient(160deg,rgba(255,255,255,.7),rgba(255,255,255,.05) 50%),repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 2px,transparent 2px 8px)}
+.art.foil::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(115deg,transparent 28%,rgba(255,255,255,.42) 43%,rgba(150,215,255,.3) 50%,rgba(255,180,230,.22) 55%,transparent 68%);background-size:260% 100%;background-position:100% 0;mix-blend-mode:screen;transition:background-position 1s ease}
+.icard:hover .art.foil::after,.gallery-main:hover .art.foil::after{background-position:0 0}
+.art.big .art-top{font-size:clamp(15px,2vw,22px)}
+.art.big .art-r,.art.big .art-bot{font-size:clamp(10px,1.2vw,13px)}
+.art.photo{background:var(--surface-2)}
+.art.photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+.art.photo.zoom img{transform:scale(2);transform-origin:50% 35%}
+.icard:hover .art.photo img{transform:scale(1.04)}
+.cat .sw{position:relative;overflow:hidden}
+.cat .sw img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.banner{position:relative;border-radius:20px;overflow:hidden;background:var(--hero) var(--img) center/cover no-repeat;min-height:170px;display:flex;align-items:flex-end}
+.banner::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(12,16,32,.88) 0%,rgba(12,16,32,.62) 55%,rgba(12,16,32,.2) 100%)}
+.banner.tall{min-height:230px}
+.banner-in{position:relative;padding:26px 28px;display:flex;flex-direction:column;gap:8px;max-width:640px}
+.banner-in h1{color:#FFFFFF}
+.banner-in p{color:rgba(255,255,255,.82)}
+.banner-in .eyebrow{color:#FF9C73}
+.event{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.event img{width:100%;height:100%;min-height:220px;object-fit:cover;display:block}
+.event-tx{padding:24px;display:flex;flex-direction:column;gap:12px;justify-content:center}
+@media (max-width:760px){.event{grid-template-columns:minmax(0,1fr)}.event img{min-height:180px;max-height:220px}}
+.art-back{background:radial-gradient(circle at 50% 50%,var(--c1) 0 18%,transparent 19%),repeating-conic-gradient(from 0deg,var(--c2) 0 15deg,var(--c1) 15deg 30deg)}
+.art-back .art-frame{align-items:center;justify-content:center}
+.art-back .art-frame span{font:700 15px var(--f-display);letter-spacing:.06em;background:rgba(0,0,0,.35);padding:6px 12px;border-radius:999px}
+.art.zoom .art-frame{transform:scale(1.9);transform-origin:50% 45%}
+
+/* ---------- item cards ---------- */
+.grid-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:18px}
+.icard{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px;transition:transform .15s ease,box-shadow .15s ease;min-width:0}
+.icard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.icard-b{display:flex;flex-direction:column;gap:4px;padding:0 4px 4px;min-width:0}
+.icard-n{font:600 14.5px/1.25 var(--f-display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icard-s{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icard-v{display:flex;align-items:center;justify-content:space-between;gap:4px 6px;margin-top:2px;flex-wrap:wrap}
+.icard-v .val{white-space:nowrap}
+.val{font-weight:700;font-variant-numeric:tabular-nums}
+.icard-o{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);margin-top:4px;padding-top:8px;border-top:1px solid var(--line);min-width:0}
+.icard-o span.n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icard-o .vmark svg.lucide{width:14px;height:14px}
+
+/* ---------- home ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+.hero-main{background:var(--hero);color:var(--hero-fg);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;min-height:250px}
+.hero-main h1{color:var(--hero-fg);max-width:16ch}
+.hero-main p{color:color-mix(in srgb,var(--hero-fg) 74%,transparent);max-width:44ch}
+.hero-main .eyebrow{color:var(--accent)}
+.hero-main .btn-ghost{background:transparent;color:var(--hero-fg);border-color:color-mix(in srgb,var(--hero-fg) 32%,transparent)}
+.hero-cards{position:absolute;right:-6px;bottom:-30px;width:196px;height:190px;pointer-events:none}
+.hero-cards .art{position:absolute;width:104px;box-shadow:0 18px 40px rgba(0,0,0,.35);border:3px solid rgba(255,255,255,.9)}
+.hero-cards .art:nth-child(1){left:0;top:30px;transform:rotate(-12deg)}
+.hero-cards .art:nth-child(2){left:72px;top:6px;transform:rotate(9deg)}
+.hero-main .hm-in{position:relative;z-index:1;display:flex;flex-direction:column;gap:16px;padding-right:190px}
+.binder{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.binder div{padding:16px 18px;border-bottom:1px solid var(--line)}
+.binder div:nth-child(even){border-right:1px solid var(--line)}
+.binder div:nth-last-child(-n+2){border-bottom:0}
+.binder b{display:block;font:600 26px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.binder span{font-size:13px;color:var(--muted)}
+.binder .bh{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;border-right:0!important}
+.todo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.todo-card{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;min-width:0}
+.todo-card .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none}
+.todo-card .tx{min-width:0;flex:1}
+.todo-card .tx b{display:block;font-weight:600}
+.todo-card .tx span{font-size:13.5px;color:var(--muted)}
+.cats{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.cat{flex:none;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 16px 10px 10px}
+.cat .sw{width:34px;height:46px;border-radius:6px;background:linear-gradient(155deg,var(--c1),var(--c2))}
+.cat b{display:block;font-weight:600;font-size:14px}
+.cat span{font-size:12px;color:var(--muted)}
+.safety-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;background:var(--trust-soft);border-radius:var(--r);overflow:hidden}
+.safety-strip div{padding:18px 20px;display:flex;gap:12px;align-items:flex-start}
+.safety-strip div+div{border-left:1px solid color-mix(in srgb,var(--trust) 18%,transparent)}
+.safety-strip svg.lucide{color:var(--trust);width:22px;height:22px;margin-top:2px}
+.safety-strip b{display:block;font-weight:600}
+.safety-strip span{font-size:13.5px;color:var(--ink-2)}
+
+/* ---------- matches ---------- */
+.mcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.mcard-h{display:flex;align-items:center;gap:10px}
+.mcard-h .who{min-width:0;flex:1;line-height:1.25}
+.mcard-h .who b{font-weight:600}
+.mcard-h .who .sub{display:block;font-size:12.5px;color:var(--muted)}
+.score{font:600 13px var(--f-mono);padding:4px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent-text);white-space:nowrap}
+.swaprow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:center}
+.swapside{display:flex;flex-direction:column;gap:6px;min-width:0}
+.swapside .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.minis{display:flex;gap:6px}
+.minis .art{width:52px;flex:none;border-radius:6px}
+.minis .art .art-frame{display:none}
+.minis .art .art-emblem{position:absolute;inset:0;margin:auto;width:56%}
+.swapside .nm{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.swapside .v{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.swapicon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--ink-2)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---------- discover ---------- */
+.filters{display:flex;flex-direction:column;gap:12px}
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.filter-row2{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filter-row2 .select{width:auto;height:38px;padding:0 34px 0 12px;border-radius:999px;font-size:13.5px}
+.filter-row2 .grow{flex:1}
+.empty{padding:48px 20px;text-align:center;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+
+/* ---------- item ---------- */
+.crumbs{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--muted)}
+.crumbs a:hover{color:var(--ink)}
+.itemview{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:32px;align-items:start}
+.gallery{display:flex;flex-direction:column;gap:12px;position:sticky;top:90px}
+.gallery-main{max-width:420px}
+.gallery-main .art{border-radius:18px}
+.thumbs{display:flex;gap:10px}
+.thumbs button{width:64px;border-radius:8px;padding:2px;border:2px solid transparent}
+.thumbs button.on{border-color:var(--ink)}
+.thumbs .art{border-radius:6px}
+.thumbs .art .art-top,.thumbs .art .art-bot{display:none}
+.thumbs small{display:block;font-size:11px;color:var(--muted);text-align:center;margin-top:3px}
+.iinfo{display:flex;flex-direction:column;gap:18px;min-width:0}
+.iinfo h1{font-size:clamp(26px,3.4vw,36px)}
+.specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.specs div{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
+.specs span{display:block;font-size:12px;color:var(--muted)}
+.specs b{font-weight:600}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.callout{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:12px;background:var(--accent-soft);color:var(--ink)}
+.callout svg.lucide{color:var(--accent-text);margin-top:2px}
+.callout.trust{background:var(--trust-soft)}
+.callout.trust svg.lucide{color:var(--trust)}
+.callout.warn{background:var(--warn-soft)}
+.callout.warn svg.lucide{color:var(--warn)}
+.owner{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.owner .t{flex:1;min-width:160px}
+.owner .t b{font:600 16px var(--f-display)}
+.owner .meta{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:4px}
+.owner .meta span{display:inline-flex;align-items:center;gap:4px}
+.owner .meta svg.lucide{width:14px;height:14px}
+.wants{display:flex;flex-wrap:wrap;gap:8px}
+.heart.on svg.lucide{fill:var(--accent);color:var(--accent)}
+
+/* ---------- trades ---------- */
+.trades{display:grid;grid-template-columns:330px minmax(0,1fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;height:calc(100dvh - 150px);min-height:560px}
+.tlist{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tlist-h{padding:16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.tlist-items{overflow-y:auto;flex:1}
+.titem{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);width:100%;text-align:left;align-items:flex-start}
+.titem:hover{background:var(--surface-2)}
+.titem.on{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--accent)}
+.titem .tx{flex:1;min-width:0}
+.titem .tx .r1{display:flex;justify-content:space-between;gap:8px}
+.titem .tx b{font-weight:600}
+.titem .tx time{font-size:12px;color:var(--muted);white-space:nowrap}
+.titem .tx p{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:2px 0 6px}
+.tpane{display:flex;flex-direction:column;min-height:0;min-width:0}
+.tpane-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tpane-h .who{flex:1;min-width:140px;line-height:1.25}
+.tpane-h .who b{font:600 16px var(--f-display)}
+.tpane-h .who .sub{display:block;font-size:12.5px;color:var(--muted)}
+.tscroll{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.tsum{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+.tsum .swaprow .minis .art{width:46px}
+.method{display:flex;gap:10px;align-items:center;font-size:13.5px;color:var(--ink-2);flex-wrap:wrap}
+.method svg.lucide{color:var(--trust)}
+.steps{display:flex;gap:0;align-items:flex-start}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;font-size:11.5px;color:var(--muted);text-align:center;min-width:0}
+.step::before{content:"";position:absolute;top:10px;left:-50%;right:50%;height:2px;background:var(--line);z-index:0}
+.step:first-child::before{display:none}
+.step i.d{width:22px;height:22px;border-radius:50%;background:var(--surface);border:2px solid var(--line);display:grid;place-items:center;position:relative;z-index:1}
+.step.done{color:var(--ink)}
+.step.done i.d{background:var(--good);border-color:var(--good)}
+.step.done i.d::after{content:"";width:6px;height:10px;border:solid var(--surface);border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+.step.done::before{background:var(--good)}
+.step.cur i.d{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.step.cur{color:var(--ink);font-weight:600}
+.msgs{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:78%;padding:9px 13px;border-radius:16px;font-size:14.5px;line-height:1.45;overflow-wrap:anywhere}
+.msg.them{align-self:flex-start;background:var(--surface-2);border-bottom-left-radius:5px}
+.msg.me{align-self:flex-end;background:var(--ink);color:var(--surface);border-bottom-right-radius:5px}
+.msg time{display:block;font-size:11px;opacity:.6;margin-top:3px}
+.msg.sys{align-self:center;max-width:92%;background:transparent;color:var(--muted);font-size:12.5px;text-align:center;padding:4px 8px;display:flex;gap:6px;align-items:center}
+.msg.sys svg.lucide{width:14px;height:14px;color:var(--good)}
+.typing{align-self:flex-start;font-size:12.5px;color:var(--muted);padding:2px 4px}
+.composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px;align-items:center}
+.composer .input{border-radius:999px;height:44px}
+.composer .quick{display:flex;gap:6px;overflow-x:auto;padding:0 12px 10px;scrollbar-width:none}
+.back-btn{display:none}
+@media (max-width:900px){
+  .trades{grid-template-columns:minmax(0,1fr);height:auto;min-height:0;border-radius:14px}
+  .trades.chat-open .tlist{display:none}
+  .trades:not(.chat-open) .tpane{display:none}
+  .tlist{border-right:0}
+  .tpane{height:calc(100dvh - 210px);min-height:480px}
+  .back-btn{display:grid}
+  .itemview{grid-template-columns:minmax(0,1fr)}
+  .gallery{position:static;align-items:center}
+  .gallery-main{width:min(320px,100%)}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .hero-main .hm-in{padding-right:0}
+  .hero-cards{display:none}
+  .safety-strip{grid-template-columns:minmax(0,1fr)}
+  .safety-strip div+div{border-left:0;border-top:1px solid color-mix(in srgb,var(--trust) 18%,transparent)}
+}
+
+/* ---------- modal ---------- */
+.modal-back{position:fixed;inset:0;z-index:60;background:var(--scrim);display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:fade .15s ease}
+.modal{background:var(--surface);border-radius:20px;width:min(760px,100%);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden}
+.modal.sm{width:min(480px,100%)}
+.modal-h{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.modal-h h2{flex:1}
+.modal-b{padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+.modal-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.modal-f .grow{flex:1;font-size:13px;color:var(--muted)}
+.stepper{display:flex;gap:6px;font-size:12.5px;color:var(--muted)}
+.stepper span{display:inline-flex;align-items:center;gap:6px}
+.stepper span.on{color:var(--ink);font-weight:600}
+.stepper span i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-style:normal;font-size:11px;font-weight:700}
+.stepper span.on i{background:var(--accent);color:var(--accent-ink)}
+.stepper span.ok i{background:var(--good);color:var(--surface)}
+.pick-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pick-list{display:flex;flex-direction:column;gap:8px}
+.pick{display:flex;gap:10px;align-items:center;padding:8px;border:1.5px solid var(--line);border-radius:12px;text-align:left;width:100%;background:var(--surface)}
+.pick .art{width:40px;flex:none;border-radius:5px}
+.pick .art .art-frame{display:none}
+.pick .art .art-emblem{position:absolute;inset:0;margin:auto;width:56%}
+.pick .tx{flex:1;min-width:0}
+.pick .tx b{display:block;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick .tx span{font-size:12px;color:var(--muted)}
+.pick .ck{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.pick.on{border-color:var(--ink);background:var(--bg)}
+.pick.on .ck{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.pick.on .ck svg.lucide{width:14px;height:14px}
+.balance{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.bal-bar{position:relative;height:10px;border-radius:999px;background:linear-gradient(90deg,var(--warn-soft),var(--good-soft) 35% 65%,var(--warn-soft))}
+.bal-bar::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--line)}
+.bal-mark{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;background:var(--ink);border:3px solid var(--surface);transform:translate(-50%,-50%);box-shadow:var(--shadow);transition:left .25s ease}
+.bal-legend{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.methods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mopt{display:flex;flex-direction:column;gap:8px;padding:14px;border:1.5px solid var(--line);border-radius:14px;text-align:left;background:var(--surface)}
+.mopt svg.lucide{width:22px;height:22px;color:var(--trust)}
+.mopt b{font-weight:600}
+.mopt span{font-size:12.5px;color:var(--muted)}
+.mopt.on{border-color:var(--ink);background:var(--bg)}
+.mopt[disabled]{opacity:.45;cursor:not-allowed}
+.spots{display:flex;flex-direction:column;gap:8px}
+.spot{display:flex;gap:12px;align-items:center;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;width:100%;text-align:left;background:var(--surface)}
+.spot.on{border-color:var(--ink);background:var(--bg)}
+.spot .tx{flex:1;min-width:0}
+.spot .tx b{display:block;font-size:14px;font-weight:600}
+.spot .tx span{font-size:12.5px;color:var(--muted)}
+.spot svg.lucide{color:var(--accent-text)}
+.review-sum{display:flex;flex-direction:column;gap:12px}
+.rate-stars{display:flex;gap:6px}
+.rate-stars button svg.lucide{width:34px;height:34px;color:var(--line)}
+.rate-stars button.on svg.lucide{color:var(--accent);fill:var(--accent)}
+.notif{position:absolute;right:0;top:52px;width:min(360px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);z-index:50;overflow:hidden}
+.notif-h{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.notif a{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:13.5px;align-items:flex-start}
+.notif a:last-child{border-bottom:0}
+.notif a:hover{background:var(--surface-2)}
+.notif a.unread{background:color-mix(in srgb,var(--accent-soft) 55%,var(--surface))}
+.notif a time{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.toast{position:fixed;left:50%;bottom:max(24px,calc(env(safe-area-inset-bottom,0px) + 90px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:999px;font-weight:500;font-size:14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:80;display:flex;gap:8px;align-items:center;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (min-width:901px){.toast{bottom:max(28px,env(safe-area-inset-bottom,0px))}}
+
+/* ---------- safety / plus / profile / new ---------- */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.mapbox{position:relative;width:100%;max-width:100%;aspect-ratio:16/11;border-radius:16px;overflow:hidden;background:var(--surface-2);border:1px solid var(--line)}
+.mapbox svg.map{position:absolute;inset:0;width:100%;height:100%}
+.map .road{stroke:var(--surface);fill:none;stroke-linecap:round}
+.map .river{stroke:var(--trust-soft);fill:none;stroke-width:3.2}
+.map .park{fill:var(--good-soft)}
+.map text{fill:var(--muted);font:600 2.6px var(--f-body);letter-spacing:.08em;text-transform:uppercase}
+.pin{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center}
+.pin i.p{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--accent);border:3px solid var(--surface);box-shadow:var(--shadow);display:block}
+.pin.store i.p{background:var(--trust)}
+.pin.on i.p{background:var(--ink)}
+.pin span{margin-top:4px;font-size:11px;font-weight:600;background:var(--surface);padding:2px 7px;border-radius:999px;white-space:nowrap;box-shadow:var(--shadow)}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;counter-reset:f}
+.flow div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px}
+.flow div::before{counter-increment:f;content:counter(f);width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font:600 13px var(--f-display);margin-bottom:4px}
+.flow b{font-weight:600}
+.flow span{font-size:13.5px;color:var(--ink-2)}
+.checklist{display:flex;flex-direction:column;gap:10px}
+.checklist div{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.checklist svg.lucide{color:var(--good);margin-top:2px}
+.fees{width:100%;border-collapse:collapse;font-size:14px}
+.fees th,.fees td{text-align:left;padding:10px 4px;border-bottom:1px solid var(--line)}
+.fees th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.fees td.num{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+.fees th.num{text-align:right}
+.plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;max-width:880px}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.plan.hot{border:2px solid var(--accent)}
+.plan .price{font:700 34px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.plan .price small{font:500 14px var(--f-body);color:var(--muted)}
+.plan ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.plan li{display:flex;gap:10px;align-items:flex-start}
+.plan li svg.lucide{color:var(--good);margin-top:2px}
+.plan li.no{color:var(--muted)}
+.plan li.no svg.lucide{color:var(--muted)}
+.prof{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.prof .t{flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px}
+.prof-stats{display:flex;gap:24px;flex-wrap:wrap}
+.prof-stats div b{display:block;font:600 20px var(--f-display);font-variant-numeric:tabular-nums}
+.prof-stats div span{font-size:12.5px;color:var(--muted)}
+.verif{display:flex;flex-wrap:wrap;gap:8px}
+.reviews{display:flex;flex-direction:column;gap:0}
+.review{display:flex;gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
+.review:last-child{border-bottom:0}
+.review .tx{flex:1;min-width:0}
+.review .r1{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.newgrid{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:28px;align-items:start}
+.form{display:flex;flex-direction:column;gap:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;color:var(--muted);cursor:pointer;background:var(--surface)}
+.drop:hover{border-color:var(--trust);color:var(--ink-2)}
+.drop svg.lucide{width:28px;height:28px}
+.drop input{display:none}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg label{padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--ink-2)}
+.seg input{display:none}
+.seg input:checked+span{color:var(--ink)}
+.seg label:has(input:checked){background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.checks{display:flex;gap:16px;flex-wrap:wrap}
+.checks label{display:inline-flex;gap:8px;align-items:center;font-size:14px}
+.checks input{width:18px;height:18px;accent-color:var(--trust)}
+.preview-col{position:sticky;top:90px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:900px){
+  .two,.newgrid{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .plans{grid-template-columns:minmax(0,1fr)}
+  .preview-col{position:static;max-width:240px}
+}
+@media (max-width:620px){
+  .pick-cols,.methods,.form-row{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .binder b{font-size:22px}
+  .msg{max-width:88%}
+  .grid-items{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+  .stepper .t{display:none}
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.view-in{animation:pop .22s ease}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app" id="app">
+  <aside class="side" aria-label="Main navigation">
+    <a class="logo" href="#home"><span class="logo-mark" aria-hidden="true"></span><span>Swap<b>Mate</b></span></a>
+    <nav class="nav" id="sidenav"></nav>
+    <a class="btn btn-accent side-cta" href="#new"><i data-lucide="plus" aria-hidden="true"></i>List an item</a>
+    <div class="spacer"></div>
+    <a class="me-mini" href="#profile"><span class="av" style="--av:#2F5FD0">YW</span><span class="t"><b>Yilin W.</b><span>Jakarta Barat · ★ 4.8</span></span></a>
+    <div class="proto"><i data-lucide="flask-conical" aria-hidden="true"></i>Prototype · sample data · photos: Unsplash</div>
+  </aside>
+  <div class="main">
+    <header class="topbar" id="topbar">
+      <div class="topbar-in">
+        <a class="logo m-logo" href="#home" aria-label="SwapMate home"><span class="logo-mark" aria-hidden="true"></span></a>
+        <form class="search" id="searchForm" role="search">
+          <i data-lucide="search" aria-hidden="true"></i>
+          <label for="q" class="sr">Search cards, figures and game items</label>
+          <input id="q" type="search" placeholder="Search Charizard, Game Boy, Gundam…" autocomplete="off">
+          <span class="k">/</span>
+        </form>
+        <div class="top-actions" style="position:relative">
+          <a class="icon-btn hide-m" href="#safety" aria-label="Safety center"><i data-lucide="shield-check" aria-hidden="true"></i></a>
+          <button class="icon-btn" id="bell" data-act="notif" aria-label="Notifications" aria-expanded="false"><i data-lucide="bell" aria-hidden="true"></i><span class="dot" id="bellDot"></span></button>
+          <div id="notifRoot"></div>
+        </div>
+      </div>
+    </header>
+    <main class="content" id="view" tabindex="-1"></main>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Main navigation"></nav>
+<div id="modalRoot"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script>
+(function(){
+"use strict";
+/* ================= data (sample) ================= */
+const ME = 'u0';
+const HUES = {
+  fire:['#F7783F','#8A2410'], water:['#4A95EA','#16367A'], psychic:['#B565DB','#45186A'], electric:['#F2BE38','#A45A08'],
+  dark:['#4D5378','#0F1122'], red:['#E5504A','#681214'], green:['#43AE72','#10442A'], light:['#9DC3EA','#30558A'],
+  purple:['#8064DA','#261A5C'], figure:['#D6C9B0','#776951'], sports:['#2F8A75','#0C3830'], skin:['#E8643F','#2A1840'],
+  sealed:['#F2B33A','#2F5FD0'], teal:['#3BB3B0','#124E58'], navy:['#3D6BE0','#141A2E']
+};
+const USERS = {
+  u0:{name:'Yilin W.', city:'Jakarta Barat', rating:4.8, trades:12, verified:true, phone:true, since:'Aug 2026', resp:'~15 min', color:'#2F5FD0'},
+  u1:{name:'Daniel S.', city:'Jakarta Selatan', rating:4.9, trades:47, verified:true, phone:true, since:'Mar 2026', resp:'~10 min', color:'#C2410C'},
+  u2:{name:'Putri A.', city:'Tangerang', rating:4.7, trades:18, verified:true, phone:true, since:'May 2026', resp:'~1 hr', color:'#9333EA'},
+  u3:{name:'Rizky P.', city:'Jakarta Pusat', rating:5.0, trades:9, verified:false, phone:true, since:'Jul 2026', resp:'~30 min', color:'#0F766E'},
+  u4:{name:'Kevin T.', city:'Bandung', rating:4.6, trades:31, verified:true, phone:true, since:'Apr 2026', resp:'~2 hr', color:'#1D4ED8'},
+  u5:{name:'Nadia R.', city:'Jakarta Utara', rating:4.9, trades:26, verified:true, phone:true, since:'Apr 2026', resp:'~20 min', color:'#BE185D'},
+  u6:{name:'Bagas H.', city:'Bekasi', rating:4.5, trades:6, verified:false, phone:true, since:'Sep 2026', resp:'~45 min', color:'#4D7C0F'},
+  u7:{name:'Clara M.', city:'Depok', rating:4.8, trades:40, verified:true, phone:true, since:'Mar 2026', resp:'~25 min', color:'#B45309'}
+};
+const CATS = ['Pokémon','Yu-Gi-Oh!','Figures','Video games','Sports','Sealed'];
+const CAT_HUE = {'Pokémon':'fire','Yu-Gi-Oh!':'purple','Sports':'sports','Figures':'figure','Video games':'skin','Sealed':'sealed'};
+const CAT_IMG = {'Pokémon':'img/cat-pokemon.jpg','Yu-Gi-Oh!':'img/cat-yugioh.jpg','Figures':'img/cat-figures.jpg','Video games':'img/cat-gaming.jpg','Sports':'img/cat-sports.jpg','Sealed':'img/lego-gameboy.jpg'};
+const CAT_KIND = {'Figures':'figure','Video games':'skin','Sealed':'sealed','Sports':'sports'};
+const COND = {NM:'Near Mint · clean edges and corners, no visible wear', LP:'Lightly Played · minor edge wear, no creases', MP:'Moderately Played · visible wear, still sleeve-playable', Used:'Used · fully working, normal signs of use', Sealed:'Factory sealed · never opened'};
+let ITEMS = [
+  {id:1, name:'Charizard V (Alt Art)', cat:'Pokémon', set:'Brilliant Stars', code:'BRS · 154/172', rar:'Alt Art', cond:'NM', value:1250000, owner:'u1', hue:'fire', foil:true, ago:'2 days ago', open:'Trade only', photos:['img/charizard-v-1.jpg','img/charizard-v-2.jpg']},
+  {id:3, name:'Pikachu (Trainer Full Art)', cat:'Pokémon', set:'Sun & Moon era', code:'SM · Full Art', rar:'Full Art', cond:'NM', value:650000, owner:'u3', hue:'electric', foil:true, ago:'1 day ago', open:'Trade only', photos:['img/pikachu-trainer.jpg']},
+  {id:5, name:'Giratina V (Alt Art)', cat:'Pokémon', set:'Lost Origin', code:'LOR · 186/196', rar:'Alt Art', cond:'NM', value:4800000, owner:'u4', hue:'dark', foil:true, ago:'3 days ago', open:'Trade + top-up', photos:['img/giratina-v-alt.jpg']},
+  {id:9, name:'Egyptian God Cards', cat:'Yu-Gi-Oh!', set:'Slifer, Obelisk & Ra', code:'YGO · Set of 3', rar:'Ultra', cond:'LP', value:600000, owner:'u6', hue:'light', foil:true, ago:'4 hours ago', open:'Trade only', photos:['img/god-cards.jpg']},
+  {id:10, name:'Dark Magician (Gold Rare)', cat:'Yu-Gi-Oh!', set:'Premium Gold', code:'YGO · Gold Rare', rar:'Gold', cond:'NM', value:450000, owner:'u0', hue:'purple', foil:true, ago:'2 weeks ago', open:'Trade only', photos:['img/dark-magician.jpg']},
+  {id:11, name:'Monkey D. Luffy Figure', cat:'Figures', set:'One Piece', code:'Figure · ~16 cm', rar:'Complete', cond:'NM', value:850000, owner:'u2', hue:'figure', kind:'figure', foil:false, ago:'3 days ago', open:'Trade + top-up', photos:['img/luffy-figure.jpg']},
+  {id:20, name:'Charizard (Base Set Holo)', cat:'Pokémon', set:'Base Set · 1999', code:'BS · 4/102', rar:'Holo', cond:'LP', value:7500000, owner:'u7', hue:'fire', foil:true, ago:'1 day ago', open:'Trade + top-up', photos:['img/charizard-base-1.jpg','img/charizard-base-2.jpg']},
+  {id:21, name:'Vaporeon (Jungle Holo)', cat:'Pokémon', set:'Jungle · 1999', code:'JU · 12/64', rar:'Holo', cond:'LP', value:900000, owner:'u2', hue:'water', foil:true, ago:'9 hours ago', open:'Trade only', photos:['img/vaporeon-jungle.jpg']},
+  {id:22, name:'Charmander (Base Set)', cat:'Pokémon', set:'Base Set · 1999', code:'BS · 46/102', rar:'Common', cond:'LP', value:150000, owner:'u3', hue:'fire', foil:false, ago:'2 days ago', open:'Trade only', photos:['img/charmander-base.jpg']},
+  {id:23, name:'Ace & Luffy Figure Set', cat:'Figures', set:'One Piece', code:'Pair · ~18 cm', rar:'Complete', cond:'NM', value:1400000, owner:'u5', hue:'figure', kind:'figure', foil:false, ago:'1 day ago', open:'Trade + top-up', photos:['img/ace-luffy-figures.jpg']},
+  {id:24, name:'Kyojuro Rengoku Figure', cat:'Figures', set:'Demon Slayer', code:'Figure · ~17 cm', rar:'Complete', cond:'NM', value:650000, owner:'u6', hue:'figure', kind:'figure', foil:false, ago:'6 hours ago', open:'Trade only', photos:['img/rengoku-figure.jpg']},
+  {id:25, name:'Pokémon Mini Figures', cat:'Figures', set:'Pokémon', code:'Set of 6', rar:'Complete', cond:'NM', value:300000, owner:'u7', hue:'figure', kind:'figure', foil:false, ago:'2 days ago', open:'Trade only', photos:['img/pokemon-mini-figures.jpg']},
+  {id:26, name:'Harpie Lady', cat:'Yu-Gi-Oh!', set:'Classic print', code:'YGO · Toploaded', rar:'Rare', cond:'LP', value:200000, owner:'u1', hue:'light', foil:false, ago:'5 days ago', open:'Trade only', photos:['img/harpie-lady.jpg']},
+  {id:27, name:'Pokémon Bulk Lot (500 cards)', cat:'Pokémon', set:'Mixed sets', code:'Bulk · 500', rar:'Bulk', cond:'LP', value:350000, owner:'u6', hue:'navy', foil:false, ago:'3 days ago', open:'Trade only', photos:['img/pokemon-bulk.jpg']},
+  {id:30, name:'Venusaur (Base Set Holo)', cat:'Pokémon', set:'Base Set · 1999', code:'BS · 15/102', rar:'Holo', cond:'LP', value:1000000, owner:'u0', hue:'green', foil:true, ago:'1 week ago', open:'Trade only', photos:['img/venusaur-base.jpg']},
+  {id:31, name:'Nintendo Game Boy (Original)', cat:'Video games', set:'Nintendo · 1989', code:'DMG-01 · Working', rar:'Console', cond:'Used', value:1300000, owner:'u0', hue:'navy', kind:'skin', foil:false, ago:'5 days ago', open:'Trade only', photos:['img/game-boy.jpg']},
+  {id:32, name:'Lapras (Fossil Holo)', cat:'Pokémon', set:'Fossil · 1999', code:'FO · 10/62', rar:'Holo', cond:'LP', value:350000, owner:'u0', hue:'water', foil:true, ago:'1 week ago', open:'Trade only', photos:['img/lapras-fossil.jpg']},
+  {id:33, name:'Charizard (Reverse Holo)', cat:'Pokémon', set:'XY Evolutions', code:'EVO · 11/108', rar:'Reverse', cond:'NM', value:900000, owner:'u1', hue:'fire', foil:true, ago:'3 days ago', open:'Trade only', photos:['img/charizard-reverse.jpg']},
+  {id:34, name:'Jolteon (Japanese Holo)', cat:'Pokémon', set:'Jungle · Japanese', code:'JP · Holo', rar:'Holo', cond:'LP', value:500000, owner:'u2', hue:'electric', foil:true, ago:'1 day ago', open:'Trade only', photos:['img/jolteon-jp.jpg']},
+  {id:35, name:'Sega Genesis Game Lot', cat:'Video games', set:'Sega Genesis / Mega Drive', code:'Lot · 6 cartridges', rar:'Lot', cond:'Used', value:800000, owner:'u3', hue:'skin', kind:'skin', foil:false, ago:'8 hours ago', open:'Trade only', photos:['img/sega-lot.jpg']},
+  {id:36, name:'NBA Holo Card (Bulls)', cat:'Sports', set:'Basketball', code:'NBA · Magnetic case', rar:'Holo', cond:'NM', value:1200000, owner:'u4', hue:'sports', kind:'sports', foil:true, ago:'2 days ago', open:'Trade only', photos:['img/nba-card.jpg']},
+  {id:37, name:'Espeon & Umbreon Plush Set', cat:'Figures', set:'Pokémon plush', code:'Plush · ~20 cm', rar:'Complete', cond:'NM', value:450000, owner:'u5', hue:'figure', kind:'figure', foil:false, ago:'12 hours ago', open:'Trade only', photos:['img/espeon-umbreon-plush.jpg']},
+  {id:38, name:'Eevee & Dark Flareon Cards', cat:'Pokémon', set:'Jungle & Team Rocket', code:'Vintage · 2 cards', rar:'Holo', cond:'LP', value:400000, owner:'u5', hue:'teal', foil:true, ago:'6 hours ago', open:'Trade only', photos:['img/eevee-flareon.jpg']},
+  {id:39, name:'Nu Gundam Model Kit (Built)', cat:'Figures', set:'Gundam · Gunpla', code:'Gunpla · Built', rar:'Built', cond:'NM', value:1100000, owner:'u7', hue:'figure', kind:'figure', foil:false, ago:'1 day ago', open:'Trade + top-up', photos:['img/nu-gundam.jpg']},
+  {id:40, name:'PlayStation (PS1) Console', cat:'Video games', set:'Sony · 1995', code:'PS1 · Working', rar:'Console', cond:'Used', value:900000, owner:'u1', hue:'navy', kind:'skin', foil:false, ago:'4 days ago', open:'Trade + top-up', photos:['img/ps1.jpg']},
+  {id:41, name:'LEGO Game Boy Set', cat:'Sealed', set:'LEGO', code:'Sealed box', rar:'Sealed', cond:'Sealed', value:1100000, owner:'u7', hue:'sealed', kind:'sealed', foil:false, ago:'1 day ago', open:'Trade only', photos:['img/lego-gameboy.jpg']},
+  {id:42, name:'Sora Mini Figure', cat:'Figures', set:'Kingdom Hearts', code:'Mini figure', rar:'Complete', cond:'NM', value:550000, owner:'u2', hue:'figure', kind:'figure', foil:false, ago:'2 days ago', open:'Trade only', photos:['img/sora-figure.jpg']},
+  {id:43, name:'Tag Team GX Cards (set of 3)', cat:'Pokémon', set:'Sun & Moon era', code:'SM · GX', rar:'GX', cond:'NM', value:1500000, owner:'u7', hue:'purple', foil:true, listed:false, photos:['img/gx-trio.jpg']},
+  {id:44, name:'Unicorn Gundam Model Kit', cat:'Figures', set:'Gundam · Gunpla', code:'Gunpla · Built', rar:'Built', cond:'NM', value:1400000, owner:'u0', hue:'figure', kind:'figure', foil:false, listed:false, photos:['img/unicorn-gundam.jpg']}
+];
+const WANTS = {
+  u0:[1,5,21,23,35,41],
+  u1:[30,32,'Any Eeveelution SIR'],
+  u2:[10,31,'Sanrio collab promos'],
+  u3:[31,'Retro handhelds'],
+  u4:[30,'PSA 10 vintage holos'],
+  u5:[32,'Eeveelution plush'],
+  u6:[10,32],
+  u7:[10,'Japanese vintage holos']
+};
+const SPOTS = [
+  {id:'gi', name:'Grand Indonesia · East Mall lobby', area:'Jakarta Pusat', type:'Mall', hours:'10:00–22:00', x:51, y:44, note:'Security desk and CCTV nearby'},
+  {id:'mrt', name:'MRT Bundaran HI · Concourse', area:'Jakarta Pusat', type:'Station', hours:'05:00–24:00', x:46, y:53, note:'Busy, well lit, staffed'},
+  {id:'kk', name:'Kota Kasablanka · Main atrium', area:'Jakarta Selatan', type:'Mall', hours:'10:00–22:00', x:63, y:63, note:'Food court seating for card checks'},
+  {id:'cp', name:'Central Park Mall · Ground floor', area:'Jakarta Barat', type:'Mall', hours:'10:00–22:00', x:31, y:39, note:'Close to Tanjung Duren'},
+  {id:'ps', name:'Partner store (example) · Kemang', area:'Jakarta Selatan', type:'Partner store', hours:'12:00–21:00', x:56, y:78, note:'Trade table; staff can check card condition', store:true},
+  {id:'bn', name:'BINUS Anggrek campus · Main lobby', area:'Jakarta Barat', type:'Campus', hours:'07:00–21:00', x:22, y:31, note:'Student meetup spot'}
+];
+let TRADES = [
+  {id:'t1', with:'u1', give:[30,32], get:[1], method:'meetup', spot:'gi', when:'Sat, 2 Nov · 15:00', status:'accepted', dir:'out', time:'10:42',
+   msgs:[
+    {f:'sys', t:'You sent an offer · 29 Oct'},
+    {f:'me', t:'Hi Daniel! I saw your Charizard V alt art. Would you take my Venusaur base set holo and Lapras Fossil holo for it?', at:'29 Oct, 19:05'},
+    {f:'u1', t:'Nice, both are on my wants list. How clean is the Venusaur holo?', at:'29 Oct, 19:20'},
+    {f:'me', t:'Very clean, only light whitening on the back. Happy to show close-ups when we meet.', at:'29 Oct, 19:22'},
+    {f:'u1', t:'Deal. Grand Indonesia on Saturday afternoon works for me.', at:'Today, 10:40'},
+    {f:'sys', t:'Daniel accepted · Meetup Sat, 2 Nov 15:00 at Grand Indonesia, East Mall lobby'}
+   ]},
+  {id:'t3', with:'u6', give:[10], get:[9], method:'meetup', spot:'kk', when:'Sun, 3 Nov · 13:00', status:'incoming', dir:'in', time:'09:12',
+   msgs:[
+    {f:'sys', t:'Bagas sent you an offer · Today 09:12'},
+    {f:'u6', t:'Hi! Would you trade your Dark Magician gold rare for my three Egyptian God cards? I can meet at Kokas this Sunday.', at:'Today, 09:12'}
+   ]},
+  {id:'t2', with:'u3', give:[31], get:[35], method:'middleman', status:'pending', dir:'out', time:'Yesterday',
+   msgs:[
+    {f:'sys', t:'You sent an offer · Yesterday'},
+    {f:'me', t:'Hey Rizky, my original Game Boy for your Sega Genesis lot? Let us use SwapMate middleman so both get checked before release.', at:'Yesterday, 21:30'}
+   ]},
+  {id:'t4', with:'u7', give:[43], get:[44], method:'meetup', spot:'cp', when:'Sat, 19 Oct · 14:00', status:'rated', rating:5, dir:'out', time:'19 Oct',
+   msgs:[
+    {f:'sys', t:'You sent an offer · 16 Oct'},
+    {f:'u7', t:'Your GX trio for my Unicorn Gundam works for me.', at:'16 Oct, 20:11'},
+    {f:'sys', t:'Clara accepted · Meetup Sat, 19 Oct at Central Park Mall'},
+    {f:'sys', t:'Both confirmed the exchange · Trade completed'},
+    {f:'sys', t:'You rated Clara ★ 5 · Clara rated you ★ 5'}
+   ]}
+];
+const REVIEWS = [
+  {by:'u7', stars:5, text:'Smooth trade at Central Park. Card was exactly as photographed.', at:'19 Oct 2026'},
+  {by:'u4', stars:5, text:'Fast replies and very well packed when shipping to Bandung.', at:'28 Sep 2026'},
+  {by:'u2', stars:4, text:'Good trade. Arrived 10 minutes late but messaged ahead.', at:'14 Sep 2026'}
+];
+let NOTIFS = [
+  {go:'trade-t3', icon:'arrow-left-right', text:'<b>Bagas H.</b> sent you an offer: Egyptian God Cards for your Dark Magician', at:'Today, 09:12', unread:true},
+  {go:'matches', icon:'sparkles', text:'New match: <b>Nadia R.</b> has the Ace &amp; Luffy figure set and wants your Lapras', at:'Today, 08:30', unread:true},
+  {go:'trade-t1', icon:'calendar-check', text:'<b>Daniel S.</b> confirmed Sat, 2 Nov 15:00 at Grand Indonesia', at:'Today, 10:40', unread:true},
+  {go:'profile', icon:'star', text:'<b>Clara M.</b> left you a 5-star review', at:'19 Oct', unread:false}
+];
+
+/* ================= state ================= */
+const S = {
+  saved:new Set([2,6]),
+  disc:{q:'', cat:'All', cond:'Any', city:'Any', verified:false, matchOnly:false, sort:'match'},
+  mtab:'two', ttab:'active', active:'t1', chatOpen:false, ptab:'haves', gview:'front', spot:'gi',
+  notifOpen:false, pm:null, draft:{name:'', cat:'Pokémon', set:'', code:'', cond:'NM', value:'', photo:null, open:'Trade only', want:''}
+};
+let nextId = 100, nextTrade = 10;
+
+/* ================= helpers ================= */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic = (n, c='') => `<i data-lucide="${n}" class="${c}" aria-hidden="true"></i>`;
+const rp = v => 'Rp ' + Math.round(v).toLocaleString('id-ID');
+const rpS = v => v >= 1e6 ? 'Rp ' + (v/1e6).toLocaleString('id-ID',{maximumFractionDigits:2}) + ' jt' : 'Rp ' + Math.round(v/1000).toLocaleString('id-ID') + ' rb';
+const item = id => ITEMS.find(i => i.id === id);
+const U = id => USERS[id];
+const first = id => U(id).name.split(' ')[0];
+const listed = () => ITEMS.filter(i => i.listed !== false);
+const mine = () => listed().filter(i => i.owner === ME);
+const wantIds = u => (WANTS[u] || []).filter(x => typeof x === 'number');
+const iWant = id => wantIds(ME).includes(id);
+const theyWantMine = uid => mine().filter(m => wantIds(uid).includes(m.id));
+const sum = ids => ids.reduce((a, id) => a + (item(id)?.value || 0), 0);
+const initials = n => n.split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase();
+const av = (uid, cls='') => `<span class="av ${cls}" style="--av:${U(uid).color}" aria-hidden="true">${initials(U(uid).name)}</span>`;
+const vmark = uid => U(uid).verified ? `<span class="vmark" title="ID verified">${ic('badge-check')}</span>` : '';
+const stars = r => `<span class="stars">${ic('star')}${r.toFixed(1)}</span>`;
+
+function art(it, opts={}){
+  if(it.photo && !opts.back) return `<div class="art photo"><img src="${it.photo}" alt="Photo of ${esc(it.name)}"></div>`;
+  if(it.photos && !opts.back){ const i = Math.min(opts.idx || 0, it.photos.length - 1); return `<div class="art photo ${it.foil?'foil':''} ${opts.zoom?'zoom':''}"><img src="${it.photos[i]}" alt="Photo of ${esc(it.name)}" loading="lazy" decoding="async"></div>`; }
+  const [c1,c2] = HUES[it.hue] || HUES.navy;
+  if(opts.back) return `<div class="art art-back" style="--c1:${c1};--c2:${c2}" role="img" aria-label="Back of ${esc(it.name)}"><div class="art-frame"><span>SWAPMATE</span></div></div>`;
+  const k = it.kind || 'card';
+  return `<div class="art art-${k} ${it.foil?'foil':''} ${opts.big?'big':''} ${opts.zoom?'zoom':''}" style="--c1:${c1};--c2:${c2}" role="img" aria-label="${esc(it.name)}, ${esc(it.code)}">
+    <div class="art-frame">
+      <div class="art-top"><span class="nm">${esc(it.name)}</span><span class="art-r">${esc(it.rar)}</span></div>
+      <div class="art-emblem"></div>
+      <div class="art-bot"><span>${esc(it.code)}</span><span>${esc(it.cond)}</span></div>
+    </div></div>`;
+}
+function icard(it){
+  const match = it.owner !== ME && theyWantMine(it.owner).length;
+  const want = it.owner !== ME && iWant(it.id);
+  const badge = want && match ? `<span class="tag tag-match">${ic('sparkles')}Match</span>` : want ? `<span class="tag tag-trust">On your list</span>` : match ? `<span class="tag">Wants yours</span>` : '';
+  return `<a class="icard" href="#item-${it.id}">
+    ${art(it)}
+    <div class="icard-b">
+      <div class="icard-n" title="${esc(it.name)}">${esc(it.name)}</div>
+      <div class="icard-s">${esc(it.set)} · <span class="mono">${esc(it.cond)}</span></div>
+      <div class="icard-v"><span class="val">${rpS(it.value)}</span>${badge}</div>
+      <div class="icard-o">${av(it.owner,'sm')}<span class="n">${esc(U(it.owner).name)} · ${esc(U(it.owner).city)}</span>${vmark(it.owner)}</div>
+    </div></a>`;
+}
+function minis(ids){ return `<div class="minis">${ids.slice(0,3).map(id => art(item(id))).join('')}</div>`; }
+function names(ids){ return ids.map(id => item(id).name).join(' + '); }
+
+function matches(){
+  const out = [];
+  Object.keys(USERS).filter(u => u !== ME).forEach(u => {
+    const give = theyWantMine(u).map(i => i.id);
+    const get = listed().filter(i => i.owner === u && iWant(i.id)).map(i => i.id);
+    if(!give.length && !get.length) return;
+    const gv = sum(give), tv = sum(get);
+    const ratio = gv && tv ? Math.min(gv,tv)/Math.max(gv,tv) : 0;
+    const two = give.length && get.length;
+    const score = two ? Math.min(98, Math.round(60 + 10*Math.min(give.length,get.length,2) + 25*ratio)) : Math.round(40 + 8*Math.max(give.length,get.length));
+    out.push({u, give, get, gv, tv, two:!!two, type: two ? 'two' : give.length ? 'theirs' : 'mine', score});
+  });
+  return out.sort((a,b) => b.score - a.score);
+}
+function mcard(m){
+  const usr = U(m.u);
+  return `<article class="mcard">
+    <div class="mcard-h">${av(m.u)}<div class="who"><b>${esc(usr.name)}</b> ${vmark(m.u)}<span class="sub">${esc(usr.city)} · ${stars(usr.rating)} · ${usr.trades} trades</span></div><span class="score" title="Match score">${m.score}% match</span></div>
+    <div class="swaprow">
+      <div class="swapside"><span class="lbl">You give</span>${m.give.length ? minis(m.give) + `<span class="nm">${esc(names(m.give))}</span><span class="v">${rpS(m.gv)}</span>` : `<span class="v">Nothing they want yet</span>`}</div>
+      <span class="swapicon">${ic('arrow-left-right')}</span>
+      <div class="swapside"><span class="lbl">You get</span>${m.get.length ? minis(m.get) + `<span class="nm">${esc(names(m.get))}</span><span class="v">${rpS(m.tv)}</span>` : `<span class="v">Nothing on your list</span>`}</div>
+    </div>
+    <div class="row wrap">
+      <button class="btn btn-accent btn-sm" data-act="propose-user" data-u="${m.u}">${ic('send')}Propose trade</button>
+      <a class="btn btn-ghost btn-sm" href="#user-${m.u}">View binder</a>
+    </div>
+  </article>`;
+}
+function statusTag(t){
+  const map = {incoming:['tag-match','New offer'], pending:['tag-warn','Waiting for reply'], accepted:['tag-trust','Accepted'], escrow:['tag-trust','With middleman'], completed:['tag-good','Completed'], rated:['tag-good','Completed'], declined:['tag-bad','Declined']};
+  const [c,l] = map[t.status];
+  return `<span class="tag ${c}">${l}</span>`;
+}
+const spot = id => SPOTS.find(s => s.id === id);
+function methodLine(t){
+  if(t.method === 'meetup') return `${ic('map-pin')}<span><b>Safe meetup</b> · ${esc(spot(t.spot)?.name || '')} · ${esc(t.when || 'Time to be agreed')}</span>`;
+  if(t.method === 'middleman') return `${ic('shield-check')}<span><b>Middleman protection</b> · Rp 15.000 fee · both items checked before release</span>`;
+  return `${ic('truck')}<span><b>Tracked shipping</b> · both sides ship insured with tracking number</span>`;
+}
+
+/* ================= views ================= */
+function vHome(){
+  const h = new Date().getHours();
+  const greet = h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam';
+  const ms = matches();
+  const two = ms.filter(m => m.two);
+  const fans = ms.filter(m => m.give.length).length;
+  const active = TRADES.filter(t => ['incoming','pending','accepted','escrow'].includes(t.status));
+  const incoming = TRADES.filter(t => t.status === 'incoming');
+  const meet = TRADES.filter(t => t.status === 'accepted' && t.method === 'meetup');
+  const trending = listed().filter(i => i.owner !== ME).sort((a,b) => (iWant(b.id) - iWant(a.id)) || b.value - a.value).slice(0,6);
+  const sample = [item(20), item(5)];
+  return `
+  <section class="hero">
+    <div class="hero-main">
+      <div class="hero-cards" aria-hidden="true">${sample.map(i => art(i)).join('')}</div>
+      <div class="hm-in">
+        <p class="eyebrow">${greet}, Yilin</p>
+        <h1>${fans} traders want something from your binder</h1>
+        <p>You have ${two.length} two-way matches today. Swap with verified collectors around Jabodetabek and meet at safe spots.</p>
+        <div class="row wrap"><a class="btn btn-accent" href="#matches">${ic('sparkles')}See my matches</a><a class="btn btn-ghost" href="#new">${ic('plus')}List an item</a></div>
+      </div>
+    </div>
+    <div class="binder" aria-label="Your binder summary">
+      <div class="bh"><h3>Your binder</h3><a class="more" href="#profile">Open ${ic('chevron-right')}</a></div>
+      <div><b>${mine().length}</b><span>Haves listed</span></div>
+      <div><b>${wantIds(ME).length}</b><span>Wants</span></div>
+      <div><b>${active.length}</b><span>Active trades</span></div>
+      <div><b>${U(ME).rating.toFixed(1)}</b><span>Rating · ${U(ME).trades} trades</span></div>
+    </div>
+  </section>
+
+  ${(incoming.length || meet.length) ? `<section>
+    <div class="sec-h"><h2>Needs your attention</h2></div>
+    <div class="todo">
+      ${incoming.map(t => `<div class="todo-card"><span class="ico" style="background:var(--accent-soft);color:var(--accent-text)">${ic('inbox')}</span><div class="tx"><b>${esc(U(t.with).name)} sent an offer</b><span>${esc(names(t.get))} for your ${esc(names(t.give))}</span></div><a class="btn btn-primary btn-sm" href="#trade-${t.id}">Review</a></div>`).join('')}
+      ${meet.map(t => `<div class="todo-card"><span class="ico" style="background:var(--trust-soft);color:var(--trust)">${ic('calendar-check')}</span><div class="tx"><b>Meetup with ${esc(U(t.with).name)}</b><span>${esc(t.when)} · ${esc(spot(t.spot).name.split(' · ')[0])}</span></div><a class="btn btn-ghost btn-sm" href="#trade-${t.id}">Details</a></div>`).join('')}
+    </div>
+  </section>` : ''}
+
+  <section>
+    <div class="sec-h"><div><p class="eyebrow">Matched on your haves and wants</p><h2>Best matches for you</h2></div><a class="more" href="#matches">All matches ${ic('chevron-right')}</a></div>
+    <div class="mcards">${two.slice(0,3).map(mcard).join('')}</div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>Browse by category</h2></div>
+    <div class="cats">${CATS.map(c => { const [c1,c2] = HUES[CAT_HUE[c]]; const n = listed().filter(i => i.cat === c).length; return `<button class="cat" data-act="cat-go" data-cat="${esc(c)}"><span class="sw" style="--c1:${c1};--c2:${c2}">${CAT_IMG[c] ? `<img src="${CAT_IMG[c]}" alt="" loading="lazy">` : ''}</span><span><b>${esc(c)}</b><span>${n} listed</span></span></button>`; }).join('')}</div>
+  </section>
+
+  <section>
+    <div class="sec-h"><div><p class="eyebrow">Jabodetabek &amp; Bandung</p><h2>Trending near you</h2></div><a class="more" href="#discover">Discover ${ic('chevron-right')}</a></div>
+    <div class="grid-items">${trending.map(icard).join('')}</div>
+  </section>
+
+  <section class="safety-strip" aria-label="How SwapMate keeps trades safe">
+    <div>${ic('badge-check')}<p><b>Verified traders</b><span>ID and phone checks, plus two-way ratings after every trade.</span></p></div>
+    <div>${ic('map-pin')}<p><b>Safe meetup spots</b><span>Busy public places and partner stores for in-person swaps.</span></p></div>
+    <div>${ic('shield-check')}<p><b>Middleman protection</b><span>For online and high-value trades. <a href="#safety" style="color:var(--trust);font-weight:600">How it works</a></span></p></div>
+  </section>`;
+}
+
+function vDiscover(){
+  const d = S.disc;
+  let list = listed().filter(i => i.owner !== ME);
+  const q = d.q.trim().toLowerCase();
+  if(q) list = list.filter(i => [i.name, i.set, i.cat, i.code, U(i.owner).name].join(' ').toLowerCase().includes(q));
+  if(d.cat !== 'All') list = list.filter(i => i.cat === d.cat);
+  if(d.cond !== 'Any') list = list.filter(i => i.cond === d.cond);
+  if(d.city !== 'Any') list = list.filter(i => U(i.owner).city.includes(d.city));
+  if(d.verified) list = list.filter(i => U(i.owner).verified);
+  if(d.matchOnly) list = list.filter(i => theyWantMine(i.owner).length);
+  const mScore = i => (iWant(i.id) ? 2 : 0) + (theyWantMine(i.owner).length ? 1 : 0);
+  list.sort(d.sort === 'match' ? (a,b) => mScore(b) - mScore(a) || b.value - a.value : d.sort === 'high' ? (a,b) => b.value - a.value : d.sort === 'low' ? (a,b) => a.value - b.value : (a,b) => b.id - a.id);
+  const cities = ['Any','Jakarta','Tangerang','Bekasi','Depok','Bandung'];
+  return `
+  <section class="banner" style="--img:url('img/banner-cards.jpg')"><div class="banner-in"><p class="eyebrow">Discover</p><h1>${q ? `Results for “${esc(d.q)}”` : 'Find your next trade'}</h1><p>${list.length} items from collectors around Jabodetabek and Bandung</p></div></section>
+  <div class="filters">
+    <div class="filter-row" role="group" aria-label="Category">${['All', ...CATS].map(c => `<button class="chip ${d.cat===c?'on':''}" data-act="cat" data-cat="${esc(c)}">${esc(c)} <span class="n">${c==='All' ? listed().filter(i=>i.owner!==ME).length : listed().filter(i => i.cat===c && i.owner!==ME).length}</span></button>`).join('')}</div>
+    <div class="filter-row2">
+      <label class="sr" for="fCond">Condition</label>
+      <select class="select" id="fCond" data-f="cond">${['Any','NM','LP','MP','Used','Sealed'].map(c => `<option value="${c}" ${d.cond===c?'selected':''}>${c==='Any'?'Any condition':c}</option>`).join('')}</select>
+      <label class="sr" for="fCity">Location</label>
+      <select class="select" id="fCity" data-f="city">${cities.map(c => `<option value="${c}" ${d.city===c?'selected':''}>${c==='Any'?'All locations':c}</option>`).join('')}</select>
+      <label class="toggle"><input type="checkbox" id="fVer" data-f="verified" ${d.verified?'checked':''}>Verified traders</label>
+      <label class="toggle"><input type="checkbox" id="fMatch" data-f="matchOnly" ${d.matchOnly?'checked':''}>Wants my items</label>
+      <span class="grow"></span>
+      <label class="sr" for="fSort">Sort</label>
+      <select class="select" id="fSort" data-f="sort">${[['match','Best match'],['new','Newest'],['high','Value: high to low'],['low','Value: low to high']].map(([v,l]) => `<option value="${v}" ${d.sort===v?'selected':''}>${l}</option>`).join('')}</select>
+    </div>
+  </div>
+  ${list.length ? `<div class="grid-items">${list.map(icard).join('')}</div>` : `<div class="empty">${ic('search-x')}<b>No items match these filters</b><span>Try another category or clear the search.</span><button class="btn btn-ghost btn-sm" data-act="clear-filters">Clear filters</button></div>`}`;
+}
+
+function vItem(id){
+  const it = item(id);
+  if(!it) return vMissing();
+  const o = U(it.owner), isMine = it.owner === ME;
+  const tw = isMine ? [] : theyWantMine(it.owner);
+  const theirWants = WANTS[it.owner] || [];
+  const more = listed().filter(i => i.owner === it.owner && i.id !== it.id).slice(0,4);
+  const hv = it.value >= 2000000 || it.digital;
+  return `
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="#discover">Discover</a>${ic('chevron-right')}<a href="#discover" data-act="cat-go" data-cat="${esc(it.cat)}">${esc(it.cat)}</a>${ic('chevron-right')}<span>${esc(it.name)}</span></nav>
+  <div class="itemview">
+    <div class="gallery">
+      ${(() => {
+        const views = it.photos ? [...it.photos.map((_,i) => ['p'+i, 'Photo '+(i+1), {idx:i}]), ['zoom','Close-up',{zoom:true}]] : [['front','Front',{}],['back','Back',{back:true}],['zoom','Corners',{zoom:true}]];
+        const cur = views.find(v => v[0] === S.gview) || views[0];
+        return `<div class="gallery-main">${art(it, {big:true, ...cur[2]})}</div>
+      <div class="thumbs" role="group" aria-label="Photos">
+        ${views.map(([k,l,o2]) => `<button class="${cur[0]===k?'on':''}" data-act="gview" data-v="${k}" aria-label="${l}">${art(it,o2)}<small>${l}</small></button>`).join('')}
+      </div>`; })()}
+      ${it.photos ? `<p class="hint">Photos taken by the owner. Ask for more angles in chat.</p>` : `<p class="hint">No photos yet. Showing a placeholder.</p>`}
+    </div>
+    <div class="iinfo">
+      <div class="row wrap">${iWant(it.id) ? `<span class="tag tag-trust">${ic('heart')}On your wants list</span>` : ''}${tw.length ? `<span class="tag tag-match">${ic('sparkles')}Two-way match</span>` : ''}<span class="tag">${esc(it.cat)}</span></div>
+      <div><h1>${esc(it.name)}</h1><p class="muted" style="margin-top:6px">${esc(it.set)} · <span class="mono">${esc(it.code)}</span> · Listed ${esc(it.ago || 'recently')}</p></div>
+      <div class="specs">
+        <div><span>Est. value</span><b>${rp(it.value)}</b></div>
+        <div><span>Condition</span><b>${esc(it.cond)}</b></div>
+        <div><span>Rarity</span><b>${esc(it.rar)}</b></div>
+        <div><span>Open to</span><b>${esc(it.open || 'Trade only')}</b></div>
+      </div>
+      <p class="hint">${esc(COND[it.cond] || '')}. Value estimate based on recent SwapMate trades (sample data).</p>
+      ${isMine ? `<div class="callout trust">${ic('info')}<p>This is your listing. ${Object.keys(WANTS).filter(u => u!==ME && wantIds(u).includes(it.id)).length} traders have it on their wants list.</p></div>
+        <div class="actions"><a class="btn btn-primary" href="#profile">${ic('book-open')}Back to my binder</a><button class="btn btn-ghost" data-act="demo" data-msg="Editing listings is not part of this prototype">${ic('pencil')}Edit listing</button></div>` : `
+      <div class="actions">
+        <button class="btn btn-accent" data-act="propose" data-id="${it.id}">${ic('arrow-left-right')}Propose trade</button>
+        <button class="btn btn-ghost" data-act="message" data-u="${it.owner}">${ic('message-circle')}Message ${esc(first(it.owner))}</button>
+        <button class="btn btn-ghost heart ${S.saved.has(it.id)?'on':''}" data-act="save" data-id="${it.id}" aria-pressed="${S.saved.has(it.id)}">${ic('heart')}${S.saved.has(it.id)?'Saved':'Save'}</button>
+      </div>
+      ${tw.length ? `<div class="callout">${ic('sparkles')}<p><b>${esc(first(it.owner))} wants your ${esc(tw.map(t=>t.name).join(' and '))}.</b> Offer ${tw.length>1?'them':'it'} for an easy two-way swap.</p></div>` : `<div class="callout trust">${ic('info')}<p>${esc(first(it.owner))} is not looking for anything in your binder yet. You can still offer items, or add a top-up if they are open to it.</p></div>`}
+      ${hv ? `<div class="callout warn">${ic('shield-alert')}<p>${it.digital ? 'Game items should be traded through <b>Middleman protection</b> so both sides release at the same time.' : 'High-value item. We recommend <b>Middleman protection</b> or a partner store meetup.'}</p></div>` : ''}
+      `}
+      <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+        <div class="owner">${av(it.owner,'lg')}<div class="t"><b>${esc(o.name)}</b> ${vmark(it.owner)}<div class="meta"><span>${ic('map-pin')}${esc(o.city)}</span><span>${stars(o.rating)}</span><span>${ic('repeat')}${o.trades} trades</span><span>${ic('clock')}Replies ${esc(o.resp)}</span></div></div><a class="btn btn-ghost btn-sm" href="#user-${it.owner}">View binder</a></div>
+        <div class="verif">${o.verified ? `<span class="tag tag-trust">${ic('badge-check')}ID verified</span>` : `<span class="tag tag-warn">${ic('alert-triangle')}ID not verified</span>`}${o.phone ? `<span class="tag tag-good">${ic('phone')}Phone verified</span>` : ''}<span class="tag">Member since ${esc(o.since)}</span></div>
+        <div><p class="lbl" style="margin-bottom:8px">${esc(first(it.owner))} is looking for</p><div class="wants">${theirWants.map(w => typeof w === 'number' ? (item(w).owner === ME ? `<a class="tag tag-match" href="#item-${w}">${ic('check')}${esc(item(w).name)} · you have this</a>` : `<span class="tag">${esc(item(w).name)}</span>`) : `<span class="tag">${esc(w)}</span>`).join('')}</div></div>
+      </div>
+    </div>
+  </div>
+  ${more.length ? `<section><div class="sec-h"><h2>More from ${esc(o.name)}</h2></div><div class="grid-items">${more.map(icard).join('')}</div></section>` : ''}`;
+}
+
+function vMatches(){
+  const ms = matches();
+  const tabs = [['two','Two-way', ms.filter(m=>m.type==='two').length],['theirs','They want yours', ms.filter(m=>m.type==='theirs').length],['mine','You want theirs', ms.filter(m=>m.type==='mine').length]];
+  const list = ms.filter(m => m.type === S.mtab);
+  return `
+  <div><p class="eyebrow">Matches</p><h1>Traders who fit your binder</h1><p class="muted" style="margin-top:8px;max-width:62ch">SwapMate compares your ${mine().length} haves and ${wantIds(ME).length} wants with every trader's list. A two-way match means you each have something the other wants. The score also checks how balanced the values are.</p></div>
+  <div class="tabs" role="tablist">${tabs.map(([k,l,n]) => `<button class="chip ${S.mtab===k?'on':''}" role="tab" aria-selected="${S.mtab===k}" data-act="mtab" data-v="${k}">${l} <span class="n">${n}</span></button>`).join('')}</div>
+  ${list.length ? `<div class="mcards">${list.map(mcard).join('')}</div>` : `<div class="empty">${ic('sparkles')}<b>No matches here yet</b><span>Add more wants to your list to find traders.</span><a class="btn btn-ghost btn-sm" href="#profile">Edit wants</a></div>`}
+  <div class="callout trust">${ic('bell-ring')}<p>Matching alerts are on. We will notify you when a new trader lists something on your wants list.</p></div>`;
+}
+
+function stepsHtml(t){
+  const third = t.method === 'meetup' ? 'Meetup' : t.method === 'middleman' ? 'Middleman' : 'Shipping';
+  const idx = {incoming:0, pending:0, declined:0, accepted:1, escrow:2, completed:3, rated:4}[t.status];
+  return `<div class="steps" aria-label="Trade progress">${['Offer sent','Accepted',third,'Completed','Rated'].map((l,i) => `<div class="step ${i<=idx?'done':''} ${i===idx+1 && t.status!=='declined'?'cur':''}"><i class="d"></i><span>${l}</span></div>`).join('')}</div>`;
+}
+function tradeActions(t){
+  const n = esc(first(t.with));
+  switch(t.status){
+    case 'incoming': return `<button class="btn btn-accent btn-sm" data-act="accept" data-t="${t.id}">${ic('check')}Accept</button><button class="btn btn-ghost btn-sm" data-act="counter" data-t="${t.id}">Counter</button><button class="btn btn-danger btn-sm" data-act="decline" data-t="${t.id}">Decline</button>`;
+    case 'pending': return `<span class="hint">Waiting for ${n} to reply</span><button class="btn btn-ghost btn-sm" data-act="demo" data-msg="Offer withdrawn (demo only, nothing changed)">Withdraw</button>`;
+    case 'accepted': return t.method === 'middleman'
+      ? `<button class="btn btn-accent btn-sm" data-act="to-escrow" data-t="${t.id}">${ic('package')}I sent my item to the middleman</button>`
+      : `<button class="btn btn-accent btn-sm" data-act="complete" data-t="${t.id}">${ic('check-check')}Confirm exchange done</button><button class="btn btn-ghost btn-sm" data-act="demo" data-msg="Reschedule request sent to ${n} (demo)">Reschedule</button>`;
+    case 'escrow': return `<span class="hint">Middleman is checking both items…</span>`;
+    case 'completed': return `<button class="btn btn-accent btn-sm" data-act="rate" data-t="${t.id}">${ic('star')}Rate ${n}</button>`;
+    case 'rated': return `<span class="stars">${ic('star')}You rated ${t.rating}</span>`;
+    default: return '';
+  }
+}
+function vTrades(){
+  const actives = ['incoming','pending','accepted','escrow','completed'];
+  const list = TRADES.filter(t => S.ttab === 'active' ? actives.includes(t.status) : !actives.includes(t.status));
+  const t = TRADES.find(x => x.id === S.active) || list[0] || TRADES[0];
+  if(t) S.active = t.id;
+  const o = t ? U(t.with) : null;
+  return `
+  <div class="sec-h" style="margin:0"><div><p class="eyebrow">Trades</p><h1>Offers and chats</h1></div><a class="btn btn-ghost btn-sm hide-m" href="#safety">${ic('shield-check')}Safety center</a></div>
+  <div class="trades ${S.chatOpen?'chat-open':''}">
+    <div class="tlist">
+      <div class="tlist-h"><div class="tabs">${[['active','Active'],['done','History']].map(([k,l]) => `<button class="chip ${S.ttab===k?'on':''}" data-act="ttab" data-v="${k}">${l} <span class="n">${TRADES.filter(x => k==='active' ? actives.includes(x.status) : !actives.includes(x.status)).length}</span></button>`).join('')}</div></div>
+      <div class="tlist-items">
+        ${list.length ? list.map(x => `<button class="titem ${x.id===S.active?'on':''}" data-act="open-trade" data-t="${x.id}">${av(x.with)}<span class="tx"><span class="r1"><b>${esc(U(x.with).name)}</b><time>${esc(x.time)}</time></span><p>${esc(names(x.give))} ⇄ ${esc(names(x.get))}</p>${statusTag(x)}</span></button>`).join('') : `<p class="hint" style="padding:16px">Nothing here yet.</p>`}
+      </div>
+    </div>
+    ${t ? `<div class="tpane">
+      <div class="tpane-h">
+        <button class="icon-btn back-btn" data-act="back-list" aria-label="Back to trades">${ic('chevron-left')}</button>
+        ${av(t.with)}<div class="who"><b>${esc(o.name)}</b> ${vmark(t.with)}<span class="sub">${esc(o.city)} · ${stars(o.rating)} · replies ${esc(o.resp)}</span></div>
+        <div class="row wrap">${tradeActions(t)}</div>
+      </div>
+      <div class="tscroll" id="tscroll">
+        <div class="tsum">
+          <div class="row" style="justify-content:space-between">${statusTag(t)}<a class="hint" href="#user-${t.with}">View ${esc(first(t.with))}'s binder</a></div>
+          <div class="swaprow">
+            <div class="swapside"><span class="lbl">You give</span>${minis(t.give)}<span class="nm">${esc(names(t.give))}</span><span class="v">${rpS(sum(t.give))}</span></div>
+            <span class="swapicon">${ic('arrow-left-right')}</span>
+            <div class="swapside"><span class="lbl">You get</span>${minis(t.get)}<span class="nm">${esc(names(t.get))}</span><span class="v">${rpS(sum(t.get))}</span></div>
+          </div>
+          <div class="method">${methodLine(t)}</div>
+          ${stepsHtml(t)}
+        </div>
+        ${!o.verified && !['rated','completed'].includes(t.status) ? `<div class="callout warn">${ic('shield-alert')}<p>${esc(first(t.with))} has not verified an ID yet. Keep the trade inside SwapMate and use a safe spot or middleman. Never pay outside the app.</p></div>` : ''}
+        <div class="msgs">${t.msgs.map(m => m.f === 'sys' ? `<div class="msg sys">${ic('check-circle-2')}${esc(m.t)}</div>` : `<div class="msg ${m.f===ME||m.f==='me'?'me':'them'}">${esc(m.t)}<time>${esc(m.at||'')}</time></div>`).join('')}</div>
+        <div class="typing" id="typing" hidden>${esc(first(t.with))} is typing…</div>
+      </div>
+      <div class="composer-wrap">
+        <div class="quick">${['Can you send close-up photos?','Is the price negotiable with top-up?','Can we meet at a safe spot?'].map(q => `<button class="chip" data-act="quick" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+        <form class="composer" id="chatForm"><label class="sr" for="chatIn">Message</label><input class="input" id="chatIn" placeholder="Message ${esc(first(t.with))}…" autocomplete="off"><button class="icon-btn" style="background:var(--btn);color:var(--btn-ink);border:0" aria-label="Send">${ic('send')}</button></form>
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+function vProfile(uid){
+  uid = uid || ME;
+  const o = U(uid), isMe = uid === ME;
+  const haves = listed().filter(i => i.owner === uid);
+  const wants = WANTS[uid] || [];
+  const tab = S.ptab;
+  const tw = isMe ? [] : theyWantMine(uid);
+  return `
+  <section class="panel prof">
+    ${av(uid,'lg')}
+    <div class="t"><div class="row wrap"><h1 style="font-size:26px">${esc(isMe ? 'Yilin Wang' : o.name)}</h1>${vmark(uid)}</div>
+      <p class="muted">${ic('map-pin')} ${esc(o.city)} · Member since ${esc(o.since)} · Replies ${esc(o.resp)}</p>
+      <div class="verif">${o.verified ? `<span class="tag tag-trust">${ic('badge-check')}ID verified</span>` : `<span class="tag tag-warn">${ic('alert-triangle')}ID not verified</span>`}${o.phone ? `<span class="tag tag-good">${ic('phone')}Phone verified</span>` : ''}${isMe ? `<span class="tag">${ic('graduation-cap')}BINUS student</span>` : ''}</div>
+    </div>
+    <div class="prof-stats"><div><b>${o.rating.toFixed(1)}</b><span>Rating</span></div><div><b>${o.trades}</b><span>Trades</span></div><div><b>${haves.length}</b><span>Haves</span></div><div><b>${wants.length}</b><span>Wants</span></div></div>
+    <div class="row wrap">${isMe ? `<button class="btn btn-ghost btn-sm" data-act="demo" data-msg="Profile editing is not part of this prototype">${ic('pencil')}Edit profile</button><a class="btn btn-accent btn-sm" href="#new">${ic('plus')}List an item</a>` : `<button class="btn btn-accent btn-sm" data-act="propose-user" data-u="${uid}">${ic('send')}Propose trade</button><button class="btn btn-ghost btn-sm" data-act="message" data-u="${uid}">${ic('message-circle')}Message</button>`}</div>
+  </section>
+  ${!isMe && tw.length ? `<div class="callout">${ic('sparkles')}<p>${esc(first(uid))} wants your <b>${esc(tw.map(x=>x.name).join(', '))}</b>.</p></div>` : ''}
+  <div class="tabs" role="tablist">${[['haves',`Haves`, haves.length],['wants','Wants', wants.length],['reviews','Reviews', isMe ? REVIEWS.length : 2]].map(([k,l,n]) => `<button class="chip ${tab===k?'on':''}" role="tab" aria-selected="${tab===k}" data-act="ptab" data-v="${k}">${l} <span class="n">${n}</span></button>`).join('')}</div>
+  ${tab === 'haves' ? (haves.length ? `<div class="grid-items">${haves.map(icard).join('')}</div>` : `<div class="empty">No items listed.</div>`) : ''}
+  ${tab === 'wants' ? `<div class="grid-items">${wants.map(w => typeof w === 'number' ? icard(item(w)) : `<div class="icard" style="justify-content:center;align-items:flex-start;min-height:180px"><span class="tag">${ic('search')}Looking for</span><div class="icard-n" style="white-space:normal">${esc(w)}</div><span class="hint">Free-text want</span></div>`).join('')}${isMe ? `<button class="icard" data-act="demo" data-msg="Adding wants is not part of this prototype" style="justify-content:center;align-items:center;min-height:180px;border-style:dashed;color:var(--muted)">${ic('plus')}Add a want</button>` : ''}</div>` : ''}
+  ${tab === 'reviews' ? `<section class="panel reviews">${(isMe ? REVIEWS : [{by:'u0',stars:5,text:'Friendly and on time. Card condition as described.',at:'Oct 2026'},{by:'u5',stars:5,text:'Quick to reply and easy to deal with.',at:'Sep 2026'}]).map(r => `<div class="review">${av(r.by)}<div class="tx"><div class="r1"><b>${esc(U(r.by).name)}</b><span class="muted">${esc(r.at)}</span></div><span class="stars">${ic('star')}${r.stars}.0</span><p style="margin-top:4px">${esc(r.text)}</p></div></div>`).join('')}</section>` : ''}`;
+}
+
+function vNew(){
+  const d = S.draft;
+  const preview = {id:0, name:d.name || 'Your item', cat:d.cat, set:d.set || 'Set or edition', code:(d.code || 'Card no.'), rar:d.cat==='Figures'?'Boxed':d.cat==='Video games'?'Console':'Rare', cond:d.cond, value:+d.value || 0, owner:ME, hue:CAT_HUE[d.cat], kind:CAT_KIND[d.cat], foil:true, photo:d.photo};
+  const fans = Object.keys(WANTS).filter(u => u !== ME && (WANTS[u]||[]).some(w => typeof w === 'string' ? false : item(w) && d.name && item(w).name.toLowerCase() === d.name.toLowerCase())).length;
+  return `
+  <div><p class="eyebrow">New listing</p><h1>List an item to trade</h1><p class="muted" style="margin-top:8px">Add clear photos and the exact condition. Good listings get matched faster.</p></div>
+  <div class="newgrid">
+    <form class="panel form" id="newForm">
+      <label class="drop" for="photo">${ic('image-plus')}<b>Add photos</b><span class="hint">Front, back and corners. JPG or PNG.</span><input type="file" id="photo" accept="image/*"></label>
+      <div class="field"><label for="nName">Item name</label><input class="input" id="nName" data-d="name" required placeholder="e.g. Gengar ex" value="${esc(d.name)}"></div>
+      <div class="form-row">
+        <div class="field"><label for="nCat">Category</label><select class="select" id="nCat" data-d="cat">${CATS.map(c => `<option ${d.cat===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+        <div class="field"><label for="nCond">Condition</label><select class="select" id="nCond" data-d="cond">${Object.keys(COND).map(c => `<option value="${c}" ${d.cond===c?'selected':''}>${c} · ${COND[c].split(' · ')[0]}</option>`).join('')}</select></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label for="nSet">Set or edition</label><input class="input" id="nSet" data-d="set" placeholder="e.g. Paldean Fates" value="${esc(d.set)}"></div>
+        <div class="field"><label for="nCode">Card number or variant</label><input class="input" id="nCode" data-d="code" placeholder="e.g. PAF · 232/091" value="${esc(d.code)}"></div>
+      </div>
+      <div class="field"><label for="nVal">Estimated value (Rp)</label><input class="input" id="nVal" data-d="value" inputmode="numeric" placeholder="e.g. 850000" value="${esc(d.value)}"><span class="hint">Used to balance trades. You are not selling for this price.</span></div>
+      <div class="field"><span class="lbl">Open to</span><div class="seg">${['Trade only','Trade + top-up'].map(v => `<label><input type="radio" name="open" value="${v}" ${d.open===v?'checked':''}><span>${v}</span></label>`).join('')}</div></div>
+      <div class="field"><label for="nWant">What would you like in return?</label><input class="input" id="nWant" data-d="want" placeholder="e.g. Any Charizard SIR, OP-05 alt arts" value="${esc(d.want)}"></div>
+      <div class="field"><span class="lbl">How you can exchange</span><div class="checks"><label><input type="checkbox" checked>Safe meetup</label><label><input type="checkbox" checked>Middleman</label><label><input type="checkbox">Tracked shipping</label></div></div>
+      <div class="row wrap" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" data-act="demo" data-msg="Draft saved">Save draft</button><button class="btn btn-accent" type="submit">${ic('check')}Publish listing</button></div>
+    </form>
+    <aside class="preview-col"><p class="lbl">Preview</p><div id="pvCard">${icardPreview(preview)}</div><p class="hint">${fans ? `${fans} traders already want this.` : 'We will match it against every trader’s wants list.'}</p></aside>
+  </div>`;
+}
+function icardPreview(p){
+  return `<div class="icard">${art(p)}<div class="icard-b"><div class="icard-n">${esc(p.name)}</div><div class="icard-s">${esc(p.set)} · <span class="mono">${esc(p.cond)}</span></div><div class="icard-v"><span class="val">${p.value ? rpS(p.value) : 'Rp —'}</span></div><div class="icard-o">${av(ME,'sm')}<span class="n">Yilin W. · Jakarta Barat</span>${vmark(ME)}</div></div></div>`;
+}
+
+function mapHtml(selected, act){
+  return `<div class="mapbox">
+    <svg class="map" viewBox="0 0 100 69" preserveAspectRatio="none" aria-hidden="true">
+      <path class="park" d="M40 26 q6 -3 10 1 q2 6 -4 8 q-7 1 -6 -9z"/>
+      <path class="park" d="M70 46 q5 -2 8 2 q0 5 -5 5 q-5 -1 -3 -7z"/>
+      <path class="river" d="M-2 20 C 18 26, 30 18, 44 30 S 70 40, 102 34"/>
+      <path class="road" stroke-width="2.4" d="M0 48 L100 40"/>
+      <path class="road" stroke-width="2.4" d="M48 0 L46 69"/>
+      <path class="road" stroke-width="1.6" d="M10 0 C 20 30, 40 40, 60 69"/>
+      <path class="road" stroke-width="1.6" d="M100 12 C 75 25, 70 45, 85 69"/>
+      <path class="road" stroke-width="1.2" d="M0 30 L 100 22"/>
+      <text x="6" y="64">Jakarta Barat</text><text x="62" y="12">Jakarta Utara</text><text x="64" y="66">Jakarta Selatan</text><text x="50" y="35">Pusat</text>
+    </svg>
+    ${SPOTS.map(s => `<button class="pin ${s.store?'store':''} ${selected===s.id?'on':''}" style="left:${s.x}%;top:${s.y}%" data-act="${act}" data-s="${s.id}" aria-label="${esc(s.name)}"><i class="p"></i>${selected===s.id ? `<span>${esc(s.name.split(' · ')[0])}</span>` : ''}</button>`).join('')}
+  </div>`;
+}
+function vSafety(){
+  const sp = spot(S.spot);
+  return `
+  <section class="banner tall" style="--img:url('img/safety-hands.jpg')"><div class="banner-in"><p class="eyebrow">Safety center</p><h1>Trade with people you can trust</h1><p>Online shopping fraud is the most reported scam type in Indonesia. SwapMate builds protection into every step: verified profiles, safe places to meet, and a middleman for trades that cannot happen face to face.</p></div></section>
+  <div class="two">
+    <section class="panel" style="display:flex;flex-direction:column;gap:14px">
+      <div class="row">${ic('map-pin')}<h2>Safe meetup spots</h2></div>
+      <p class="muted">Busy public places with security and CCTV, plus partner stores where staff can check card condition.</p>
+      ${mapHtml(S.spot,'spot-pick')}
+      <div class="spots">${SPOTS.map(s => `<button class="spot ${S.spot===s.id?'on':''}" data-act="spot-pick" data-s="${s.id}">${ic(s.store?'store':s.type==='Station'?'train-front':s.type==='Campus'?'graduation-cap':'building-2')}<span class="tx"><b>${esc(s.name)}</b><span>${esc(s.area)} · ${esc(s.hours)} · ${esc(s.note)}</span></span><span class="tag ${s.store?'tag-trust':''}">${esc(s.type)}</span></button>`).join('')}</div>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:18px">
+      <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+        <div class="row">${ic('shield-check')}<h2>Middleman protection</h2></div>
+        <p class="muted">For game items, long-distance trades and anything above Rp 2 jt. Neither side releases an item until both are checked.</p>
+        <table class="fees"><thead><tr><th>Trade value</th><th class="num">Fee</th></tr></thead><tbody>
+          <tr><td>Up to Rp 2 jt</td><td class="num">Rp 15.000</td></tr>
+          <tr><td>Rp 2 jt – Rp 10 jt</td><td class="num">1%</td></tr>
+          <tr><td>SwapMate Plus members</td><td class="num">2 free / month</td></tr>
+        </tbody></table>
+        <p class="hint">Fees are a proposal for testing with users.</p>
+      </div>
+      <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+        <h3>Before every trade</h3>
+        <div class="checklist">
+          ${['Check the trader’s verified badge, rating and trade history','Keep all chat inside SwapMate so support can help if needed','Ask for close-up photos of corners and edges','Meet at a safe spot in daylight, or use a middleman','Never pay or send items outside the app'].map(t => `<div>${ic('check-circle-2')}<span>${t}</span></div>`).join('')}
+        </div>
+        <button class="btn btn-ghost btn-sm" style="align-self:flex-start" data-act="demo" data-msg="Report form opened (demo)">${ic('flag')}Report a problem</button>
+      </div>
+    </section>
+  </div>
+  <section><div class="sec-h"><h2>How middleman protection works</h2></div>
+    <div class="flow">
+      <div><b>Both agree</b><span>You and your partner accept the trade and choose Middleman.</span></div>
+      <div><b>Both send</b><span>Each side sends the item to a SwapMate checker (game items via a Steam trade bot).</span></div>
+      <div><b>We check</b><span>Condition and authenticity are compared with the listing photos.</span></div>
+      <div><b>We release</b><span>Both items are released at the same time. If one fails, both are returned.</span></div>
+    </div>
+  </section>
+  <section class="event">
+    <img src="img/trade-night.jpg" alt="Collectors browsing tables at a busy trading event" loading="lazy">
+    <div class="event-tx"><p class="eyebrow">Community</p><h2>SwapMate Trade Nights</h2><p class="muted">Monthly meetups with partner stores, where verified members trade face to face and staff check card condition on the spot.</p><div class="row wrap"><span class="tag">${ic('calendar')}Sat, 16 Nov · 15:00</span><span class="tag">${ic('map-pin')}Partner store (example) · Kemang</span></div><button class="btn btn-primary btn-sm" style="align-self:flex-start" data-act="demo" data-msg="You are on the list for Trade Night (demo)">${ic('ticket')}Join the next Trade Night</button></div>
+  </section>
+  <p class="hint">Photos from Unsplash, used under the Unsplash License. Listings and users are sample data.</p>`;
+}
+function vPlus(){
+  const row = (t, on=true) => `<li class="${on?'':'no'}">${ic(on?'check':'minus')}<span>${t}</span></li>`;
+  return `
+  <div><p class="eyebrow">SwapMate Plus</p><h1>Trade more, worry less</h1><p class="muted" style="margin-top:8px;max-width:60ch">The core app is free: list, match, chat and trade. Plus adds extra protection and reach for active collectors.</p></div>
+  <div class="plans">
+    <div class="plan"><div><h3>Free</h3><p class="muted">For everyone</p></div><div class="price">Rp 0</div>
+      <ul>${row('Unlimited listings and wants')}${row('Haves-vs-wants matching')}${row('In-app chat and trade offers')}${row('Safe meetup spots')}${row('Middleman at Rp 15.000 per trade')}${row('Advanced filters',false)}${row('Featured listings',false)}</ul>
+      <span class="tag" style="align-self:flex-start">Current plan</span></div>
+    <div class="plan hot"><div class="row" style="justify-content:space-between"><div><h3>Plus</h3><p class="muted">For active collectors</p></div><span class="tag tag-match">${ic('crown')}Popular</span></div><div class="price">Rp 29.000 <small>/ month</small></div>
+      <ul>${row('Everything in Free')}${row('2 free middleman trades every month')}${row('Instant alerts when a want is listed')}${row('Advanced filters: grade, set, language')}${row('3 featured boosts per month')}${row('Collection value tracker')}</ul>
+      <button class="btn btn-accent" data-act="demo" data-msg="Payments are not part of this prototype">Try Plus free for 14 days</button></div>
+  </div>
+  <section class="panel" style="max-width:880px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <span class="ico" style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-text)">${ic('rocket')}</span>
+    <div style="flex:1;min-width:220px"><h3>Featured listing</h3><p class="muted">Pin one listing to the top of Discover in its category for 3 days.</p></div>
+    <div class="price" style="font:700 22px var(--f-display)">Rp 9.000</div>
+    <button class="btn btn-ghost btn-sm" data-act="demo" data-msg="Boost purchase is not part of this prototype">Boost a listing</button>
+  </section>`;
+}
+function vMissing(){ return `<div class="empty">${ic('help-circle')}<b>Page not found</b><a class="btn btn-ghost btn-sm" href="#home">Go home</a></div>`; }
+
+/* ================= propose modal ================= */
+function openPropose(uid, getIds, giveIds){
+  const tw = theyWantMine(uid).map(i => i.id);
+  S.pm = {u:uid, get:new Set(getIds || []), give:new Set(giveIds || tw.slice(0,2)), method:'meetup', spot:'gi', day:'Sat, 2 Nov', time:'15:00', note:'', step:1};
+  autoMethod();
+  renderModal();
+}
+function autoMethod(){
+  const pm = S.pm, all = [...pm.get, ...pm.give].map(item);
+  if(all.some(i => i && i.digital)) pm.method = 'middleman';
+}
+function balanceHtml(){
+  const pm = S.pm, gv = sum([...pm.give]), tv = sum([...pm.get]);
+  const mx = Math.max(gv, tv, 1), diff = (gv - tv) / mx;
+  const pos = 50 + Math.max(-1, Math.min(1, diff)) * 45;
+  let label, cls;
+  if(!gv || !tv){ label = 'Pick at least one item on each side'; cls = 'tag'; }
+  else if(Math.abs(diff) <= .15){ label = 'Fair trade'; cls = 'tag tag-good'; }
+  else if(diff > 0){ label = `You offer ${rpS(gv - tv)} more`; cls = 'tag tag-warn'; }
+  else { label = `You ask ${rpS(tv - gv)} more. Consider adding an item or top-up`; cls = 'tag tag-warn'; }
+  return `<div class="balance"><div class="row" style="justify-content:space-between;flex-wrap:wrap"><span class="lbl">Value balance</span><span class="${cls}">${label}</span></div>
+    <div class="bal-bar"><span class="bal-mark" style="left:${pos}%"></span></div>
+    <div class="bal-legend"><span>You get ${rpS(tv)}</span><span>Fair zone ±15%</span><span>You give ${rpS(gv)}</span></div></div>`;
+}
+function renderModal(){
+  const pm = S.pm; if(!pm) { $('#modalRoot').innerHTML = ''; return; }
+  const o = U(pm.u), n = esc(first(pm.u));
+  const theirs = listed().filter(i => i.owner === pm.u);
+  const steps = ['Choose items','Exchange','Review'];
+  const hasDigital = [...pm.get, ...pm.give].map(item).some(i => i && i.digital);
+  let body = '';
+  if(pm.step === 1){
+    body = `<div class="pick-cols">
+      <div><p class="lbl" style="margin-bottom:8px">You get from ${n}</p><div class="pick-list">${theirs.map(i => `<button class="pick ${pm.get.has(i.id)?'on':''}" data-act="pm-get" data-id="${i.id}" aria-pressed="${pm.get.has(i.id)}">${art(i)}<span class="tx"><b>${esc(i.name)}</b><span>${rpS(i.value)} · ${esc(i.cond)}${iWant(i.id)?' · on your list':''}</span></span><span class="ck">${pm.get.has(i.id)?ic('check'):''}</span></button>`).join('')}</div></div>
+      <div><p class="lbl" style="margin-bottom:8px">You give</p><div class="pick-list">${mine().map(i => `<button class="pick ${pm.give.has(i.id)?'on':''}" data-act="pm-give" data-id="${i.id}" aria-pressed="${pm.give.has(i.id)}">${art(i)}<span class="tx"><b>${esc(i.name)}</b><span>${rpS(i.value)} · ${esc(i.cond)}${wantIds(pm.u).includes(i.id)?` · <span style="color:var(--accent-text);font-weight:600">${n} wants this</span>`:''}</span></span><span class="ck">${pm.give.has(i.id)?ic('check'):''}</span></button>`).join('')}</div></div>
+    </div>${balanceHtml()}`;
+  } else if(pm.step === 2){
+    const opt = (k, icn, t, d, dis) => `<button class="mopt ${pm.method===k?'on':''}" data-act="pm-method" data-v="${k}" ${dis?'disabled':''} aria-pressed="${pm.method===k}">${ic(icn)}<b>${t}</b><span>${d}</span></button>`;
+    body = `${hasDigital ? `<div class="callout trust">${ic('info')}<p>This trade includes game items, so it goes through Middleman protection. Both items are held by a Steam trade bot until both sides deliver.</p></div>` : ''}
+      <div class="methods">
+        ${opt('meetup','map-pin','Safe meetup','Meet at a public safe spot. Free.', hasDigital)}
+        ${opt('middleman','shield-check','Middleman','We check both items, then release. Rp 15.000.', false)}
+        ${opt('ship','truck','Tracked shipping','Both ship insured with tracking. You pay postage.', hasDigital)}
+      </div>
+      ${pm.method === 'meetup' ? `<div class="two" style="gap:14px">
+        <div>${mapHtml(pm.spot,'pm-spot')}</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="spots">${SPOTS.slice(0,5).map(s => `<button class="spot ${pm.spot===s.id?'on':''}" data-act="pm-spot" data-s="${s.id}">${ic('map-pin')}<span class="tx"><b>${esc(s.name.split(' · ')[0])}</b><span>${esc(s.area)}</span></span></button>`).join('')}</div>
+          <div class="form-row"><div class="field"><label for="pmDay">Day</label><select class="select" id="pmDay" data-pm="day">${['Sat, 2 Nov','Sun, 3 Nov','Mon, 4 Nov','Wed, 6 Nov'].map(d => `<option ${pm.day===d?'selected':''}>${d}</option>`).join('')}</select></div>
+          <div class="field"><label for="pmTime">Time</label><select class="select" id="pmTime" data-pm="time">${['11:00','13:00','15:00','17:00','19:00'].map(d => `<option ${pm.time===d?'selected':''}>${d}</option>`).join('')}</select></div></div>
+        </div></div>` : pm.method === 'middleman' ? `<div class="flow" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><div><b>Both send</b><span>Within 48 hours of acceptance.</span></div><div><b>We check</b><span>Against your listing photos.</span></div><div><b>We release</b><span>Both items at the same time.</span></div></div>` : `<div class="callout trust">${ic('info')}<p>You will both enter a tracking number in the chat. SwapMate support can step in if a parcel does not arrive.</p></div>`}`;
+  } else {
+    const fee = pm.method === 'middleman' ? 'Rp 15.000' : 'Free';
+    body = `<div class="review-sum">
+      <div class="tsum" style="background:var(--surface)"><div class="swaprow">
+        <div class="swapside"><span class="lbl">You give</span>${minis([...pm.give])}<span class="nm">${esc(names([...pm.give]))}</span><span class="v">${rpS(sum([...pm.give]))}</span></div>
+        <span class="swapicon">${ic('arrow-left-right')}</span>
+        <div class="swapside"><span class="lbl">You get</span>${minis([...pm.get])}<span class="nm">${esc(names([...pm.get]))}</span><span class="v">${rpS(sum([...pm.get]))}</span></div>
+      </div>
+      <div class="method">${methodLine({method:pm.method, spot:pm.spot, when:`${pm.day} · ${pm.time}`})}</div></div>
+      <div class="specs"><div><span>Trading with</span><b>${esc(o.name)}</b></div><div><span>Their rating</span><b>${o.rating.toFixed(1)} · ${o.trades} trades</b></div><div><span>SwapMate fee</span><b>${fee}</b></div></div>
+      <div class="field"><label for="pmNote">Message to ${n}</label><textarea class="textarea" id="pmNote" data-pm="note" placeholder="Say hi and add any details">${esc(pm.note || `Hi ${first(pm.u)}! Would you trade your ${names([...pm.get])} for my ${names([...pm.give])}?`)}</textarea></div>
+    </div>`;
+  }
+  const canNext = pm.step !== 1 || (pm.get.size && pm.give.size);
+  $('#modalRoot').innerHTML = `<div class="modal-back" data-act="close-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+    <div class="modal-h">${av(pm.u)}<h2 id="pmTitle">Trade with ${esc(o.name)}</h2><button class="icon-btn" data-act="close" aria-label="Close">${ic('x')}</button></div>
+    <div class="modal-b">
+      <div class="stepper">${steps.map((s,i) => `<span class="${pm.step===i+1?'on':pm.step>i+1?'ok':''}"><i>${pm.step>i+1?'✓':i+1}</i><span class="t">${s}</span></span>${i<2?'<span aria-hidden="true">·</span>':''}`).join('')}</div>
+      ${body}
+    </div>
+    <div class="modal-f"><span class="grow">${pm.step===1 ? 'Select items on both sides' : pm.step===2 ? 'You can change this later in chat' : 'Nothing is exchanged until both sides confirm'}</span>
+      ${pm.step>1 ? `<button class="btn btn-ghost" data-act="pm-back">Back</button>` : ''}
+      ${pm.step<3 ? `<button class="btn btn-primary" data-act="pm-next" ${canNext?'':'disabled'}>Continue</button>` : `<button class="btn btn-accent" data-act="pm-send">${ic('send')}Send offer</button>`}
+    </div></div></div>`;
+  icons();
+}
+
+function openRate(tid){
+  const t = TRADES.find(x => x.id === tid);
+  S.rate = {t:tid, stars:5, tags:new Set(['Item as described'])};
+  renderRate();
+}
+function renderRate(){
+  const r = S.rate, t = TRADES.find(x => x.id === r.t), n = esc(first(t.with));
+  $('#modalRoot').innerHTML = `<div class="modal-back" data-act="close-bg"><div class="modal sm" role="dialog" aria-modal="true" aria-labelledby="rTitle">
+    <div class="modal-h">${av(t.with)}<h2 id="rTitle">Rate ${n}</h2><button class="icon-btn" data-act="close" aria-label="Close">${ic('x')}</button></div>
+    <div class="modal-b">
+      <p class="muted">Your rating builds ${n}'s reputation and helps other collectors trade safely.</p>
+      <div class="rate-stars" role="radiogroup" aria-label="Stars">${[1,2,3,4,5].map(i => `<button class="${i<=r.stars?'on':''}" data-act="r-star" data-v="${i}" role="radio" aria-checked="${i===r.stars}" aria-label="${i} star${i>1?'s':''}">${ic('star')}</button>`).join('')}</div>
+      <div class="wants">${['On time','Item as described','Friendly','Well packed','Fair trader'].map(g => `<button class="chip ${r.tags.has(g)?'on':''}" data-act="r-tag" data-v="${g}">${g}</button>`).join('')}</div>
+      <div class="field"><label for="rText">Comment (optional)</label><textarea class="textarea" id="rText" placeholder="How did the trade go?"></textarea></div>
+    </div>
+    <div class="modal-f"><button class="btn btn-ghost" data-act="close">Later</button><button class="btn btn-accent" data-act="r-send">Submit rating</button></div></div></div>`;
+  icons();
+}
+function closeModal(){ S.pm = null; S.rate = null; $('#modalRoot').innerHTML = ''; }
+
+/* ================= render & routing ================= */
+const NAV = [['home','home','Home'],['discover','compass','Discover'],['matches','sparkles','Matches'],['trades','arrow-left-right','Trades'],['profile','book-open','My binder'],['safety','shield-check','Safety center'],['plus','crown','SwapMate Plus']];
+function renderNav(route){
+  const base = route.split('-')[0];
+  const act = base === 'item' ? 'discover' : base === 'trade' ? 'trades' : base === 'user' ? 'discover' : base;
+  const inc = TRADES.filter(t => t.status === 'incoming').length;
+  const newM = matches().filter(m => m.two).length;
+  const cnt = k => k === 'trades' && inc ? `<span class="count">${inc}</span>` : k === 'matches' ? `<span class="count">${newM}</span>` : '';
+  $('#sidenav').innerHTML = NAV.map(([k,i,l]) => `<a href="#${k}" class="${act===k?'on':''}" ${act===k?'aria-current="page"':''}>${ic(i)}${l}${cnt(k)}</a>`).join('');
+  const tb = [['home','home','Home'],['discover','compass','Discover'],['new','plus',''],['trades','arrow-left-right','Trades'],['profile','book-open','Binder']];
+  $('#tabbar').innerHTML = tb.map(([k,i,l]) => k === 'new' ? `<a href="#new" class="plus" aria-label="List an item">${ic(i)}</a>` : `<a href="#${k}" class="${act===k?'on':''}" ${act===k?'aria-current="page"':''}>${ic(i)}<span>${l}</span>${cnt(k)}</a>`).join('');
+  $('#bellDot').hidden = !NOTIFS.some(n => n.unread);
+}
+function icons(){ try { if(window.lucide) window.lucide.createIcons(); } catch(e){} }
+function currentRoute(){ return (location.hash || '#home').slice(1) || 'home'; }
+function render(opts={}){
+  const r = currentRoute();
+  let html;
+  if(r === 'home') html = vHome();
+  else if(r === 'discover') html = vDiscover();
+  else if(r.startsWith('item-')) html = vItem(+r.slice(5));
+  else if(r === 'matches') html = vMatches();
+  else if(r === 'trades') html = vTrades();
+  else if(r.startsWith('trade-')) html = vTrades();
+  else if(r === 'profile') html = vProfile(ME);
+  else if(r.startsWith('user-')) html = USERS[r.slice(5)] ? vProfile(r.slice(5)) : vMissing();
+  else if(r === 'new') html = vNew();
+  else if(r === 'safety') html = vSafety();
+  else if(r === 'plus') html = vPlus();
+  else html = vMissing();
+  const v = $('#view');
+  v.innerHTML = html;
+  if(opts.anim){ v.classList.remove('view-in'); void v.offsetWidth; v.classList.add('view-in'); }
+  renderNav(r);
+  icons();
+  const sc = $('#tscroll'); if(sc) sc.scrollTop = sc.scrollHeight;
+  document.title = 'SwapMate';
+}
+let lastRoute = null;
+function onRoute(){
+  const r = currentRoute();
+  if(r.startsWith('item-') && lastRoute !== r) S.gview = 'p0';
+  if(r.startsWith('user-') && lastRoute !== r) S.ptab = 'haves';
+  if(r === 'profile' && lastRoute && !lastRoute.startsWith('profile')) S.ptab = 'haves';
+  if(r === 'trades') S.chatOpen = false;
+  if(r.startsWith('trade-')){ S.active = r.slice(6); S.chatOpen = true; const t = TRADES.find(x => x.id === S.active); if(t) S.ttab = ['rated','declined'].includes(t.status) ? 'done' : 'active'; }
+  closeNotif();
+  closeModal();
+  render({anim:true});
+  if(lastRoute !== null) window.scrollTo(0,0);
+  lastRoute = r;
+}
+
+/* ================= toast & notifications ================= */
+let toastT;
+function toast(msg, icon='check-circle-2'){
+  const t = $('#toast');
+  t.innerHTML = `${ic(icon)}<span>${esc(msg)}</span>`;
+  icons();
+  t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function renderNotif(){
+  $('#notifRoot').innerHTML = S.notifOpen ? `<div class="notif" role="dialog" aria-label="Notifications"><div class="notif-h"><b>Notifications</b><button class="hint" data-act="notif-read" style="color:var(--trust);font-weight:600">Mark all read</button></div>${NOTIFS.map((n,i) => `<a href="#${n.go}" class="${n.unread?'unread':''}" data-act="notif-go" data-i="${i}">${ic(n.icon)}<span>${n.text}<time>${esc(n.at)}</time></span></a>`).join('')}</div>` : '';
+  $('#bell').setAttribute('aria-expanded', S.notifOpen);
+  $('#bellDot').hidden = !NOTIFS.some(n => n.unread);
+  icons();
+}
+function closeNotif(){ if(S.notifOpen){ S.notifOpen = false; renderNotif(); } }
+
+/* ================= trade logic ================= */
+function tr(id){ return TRADES.find(t => t.id === id); }
+function nowLabel(){ const d = new Date(); return 'Today, ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+function addMsg(t, f, text){ t.msgs.push({f, t:text, at:nowLabel()}); t.time = nowLabel().slice(7); }
+function rerenderTrade(id){ if(currentRoute().startsWith('trade') && S.active === id) render(); else renderNav(currentRoute()); }
+function reply(t, text, after, ms=1500){
+  setTimeout(() => {
+    const ty = $('#typing'); if(ty && S.active === t.id) ty.hidden = false;
+    const sc = $('#tscroll'); if(sc) sc.scrollTop = sc.scrollHeight;
+  }, 400);
+  setTimeout(() => { addMsg(t, t.with, text); if(after) after(); rerenderTrade(t.id); }, ms);
+}
+const REPLIES = {
+  incoming:'Let me know what you think!',
+  pending:'Got it, checking my binder now.',
+  accepted:'Sounds good. I will bring a top loader for the card.',
+  escrow:'Sent mine too.',
+  completed:'Thanks, that was a smooth trade!',
+  rated:'Thanks again!',
+  declined:'No worries, maybe next time.'
+};
+
+/* ================= events ================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if(!el){
+    if(S.notifOpen && !e.target.closest('.notif')) closeNotif();
+    return;
+  }
+  const a = el.dataset.act;
+  if(a === 'close-bg'){ if(e.target === el) closeModal(); return; }
+  if(a === 'close'){ closeModal(); return; }
+  if(a === 'notif'){ e.stopPropagation(); S.notifOpen = !S.notifOpen; renderNotif(); return; }
+  if(a === 'notif-read'){ NOTIFS.forEach(n => n.unread = false); renderNotif(); return; }
+  if(a === 'notif-go'){ NOTIFS[+el.dataset.i].unread = false; S.notifOpen = false; renderNotif(); return; }
+  if(a === 'demo'){ e.preventDefault(); toast(el.dataset.msg || 'Not part of this prototype', 'info'); return; }
+  if(a === 'cat-go'){ e.preventDefault(); S.disc = {...S.disc, cat:el.dataset.cat, q:''}; $('#q').value = ''; if(currentRoute() === 'discover') render(); else location.hash = 'discover'; return; }
+  if(a === 'cat'){ S.disc.cat = el.dataset.cat; render(); return; }
+  if(a === 'clear-filters'){ S.disc = {q:'', cat:'All', cond:'Any', city:'Any', verified:false, matchOnly:false, sort:'match'}; $('#q').value = ''; render(); return; }
+  if(a === 'save'){ const id = +el.dataset.id; S.saved.has(id) ? S.saved.delete(id) : S.saved.add(id); toast(S.saved.has(id) ? 'Saved to your wishlist' : 'Removed from saved', 'heart'); render(); return; }
+  if(a === 'gview'){ S.gview = el.dataset.v; render(); return; }
+  if(a === 'mtab'){ S.mtab = el.dataset.v; render(); return; }
+  if(a === 'ttab'){ S.ttab = el.dataset.v; const first = TRADES.find(t => (el.dataset.v==='active') === !['rated','declined'].includes(t.status)); if(first) S.active = first.id; render(); return; }
+  if(a === 'ptab'){ S.ptab = el.dataset.v; render(); return; }
+  if(a === 'open-trade'){ S.active = el.dataset.t; S.chatOpen = true; render(); return; }
+  if(a === 'back-list'){ S.chatOpen = false; render(); return; }
+  if(a === 'spot-pick'){ S.spot = el.dataset.s; render(); return; }
+  if(a === 'message'){ const u = el.dataset.u; const t = TRADES.find(x => x.with === u && !['rated','declined'].includes(x.status)); if(t){ location.hash = 'trade-' + t.id; } else { toast(`Start by proposing a trade to ${first(u)}`, 'message-circle'); } return; }
+  if(a === 'propose'){ const it = item(+el.dataset.id); openPropose(it.owner, [it.id]); return; }
+  if(a === 'propose-user'){ const u = el.dataset.u; const m = matches().find(x => x.u === u); openPropose(u, m ? m.get : [], m ? m.give : []); return; }
+  if(a === 'pm-get' || a === 'pm-give'){ const set = a === 'pm-get' ? S.pm.get : S.pm.give; const id = +el.dataset.id; set.has(id) ? set.delete(id) : set.add(id); autoMethod(); renderModal(); return; }
+  if(a === 'pm-method'){ S.pm.method = el.dataset.v; renderModal(); return; }
+  if(a === 'pm-spot'){ S.pm.spot = el.dataset.s; renderModal(); return; }
+  if(a === 'pm-next'){ S.pm.step++; renderModal(); return; }
+  if(a === 'pm-back'){ S.pm.step--; renderModal(); return; }
+  if(a === 'pm-send'){ sendOffer(); return; }
+  if(a === 'r-star'){ S.rate.stars = +el.dataset.v; renderRate(); return; }
+  if(a === 'r-tag'){ const g = el.dataset.v; S.rate.tags.has(g) ? S.rate.tags.delete(g) : S.rate.tags.add(g); renderRate(); return; }
+  if(a === 'r-send'){ const t = tr(S.rate.t); t.status = 'rated'; t.rating = S.rate.stars; t.msgs.push({f:'sys', t:`You rated ${first(t.with)} ★ ${t.rating}${S.rate.tags.size ? ' · ' + [...S.rate.tags].join(', ') : ''}`}); closeModal(); toast(`Thanks! ${first(t.with)}'s reputation is updated`, 'star'); render(); return; }
+  if(a === 'quick'){ const inp = $('#chatIn'); if(inp){ inp.value = el.dataset.q; inp.focus(); } return; }
+  const t = el.dataset.t ? tr(el.dataset.t) : null;
+  if(a === 'accept' && t){ t.status = 'accepted'; t.msgs.push({f:'sys', t:`You accepted · Meetup ${t.when} at ${spot(t.spot).name}`}); toast('Trade accepted. Meetup added to your trades', 'calendar-check'); render(); reply(t, 'Great! See you on Sunday. I will wear a black SwapMate tee.'); return; }
+  if(a === 'decline' && t){ t.status = 'declined'; t.msgs.push({f:'sys', t:'You declined this offer'}); toast('Offer declined', 'x-circle'); S.ttab = 'done'; render(); return; }
+  if(a === 'counter' && t){ openPropose(t.with, t.get, t.give); S.pm.step = 1; renderModal(); toast('Adjust the items to send a counter offer', 'repeat'); return; }
+  if(a === 'complete' && t){ t.status = 'completed'; t.msgs.push({f:'sys', t:'Both confirmed the exchange · Trade completed'}); render(); openRate(t.id); return; }
+  if(a === 'rate' && t){ openRate(t.id); return; }
+  if(a === 'to-escrow' && t){
+    t.status = 'escrow'; t.msgs.push({f:'sys', t:`You sent ${names(t.give)} to the SwapMate middleman`}); render();
+    setTimeout(() => { t.msgs.push({f:'sys', t:`${first(t.with)} sent ${names(t.get)} · Middleman checked both items`}); rerenderTrade(t.id); }, 1800);
+    setTimeout(() => { t.status = 'completed'; t.msgs.push({f:'sys', t:'Both items released · Trade completed'}); toast('Middleman released both items', 'shield-check'); rerenderTrade(t.id); }, 3600);
+    return;
+  }
+});
+function sendOffer(){
+  const pm = S.pm;
+  if(currentRoute().startsWith('trade-') || currentRoute() === 'trades'){
+    const old = TRADES.find(x => x.with === pm.u && x.status === 'incoming');
+    if(old){ old.status = 'declined'; old.msgs.push({f:'sys', t:'You sent a counter offer'}); }
+  }
+  const note = ($('#pmNote')?.value || '').trim();
+  const t = {id:'t' + (nextTrade++), with:pm.u, give:[...pm.give], get:[...pm.get], method:pm.method, spot:pm.spot, when:`${pm.day} · ${pm.time}`, status:'pending', dir:'out', time:nowLabel().slice(7), msgs:[{f:'sys', t:'You sent an offer · Today'}]};
+  if(note) t.msgs.push({f:'me', t:note, at:nowLabel()});
+  TRADES.unshift(t);
+  closeModal();
+  toast(`Offer sent to ${first(pm.u)}`, 'send');
+  location.hash = 'trade-' + t.id;
+  const u = pm.u;
+  reply(t, 'Looks fair to me. Accepting!', () => {
+    if(t.status !== 'pending') return;
+    t.status = 'accepted';
+    t.msgs.push({f:'sys', t: t.method === 'meetup' ? `${first(u)} accepted · Meetup ${t.when} at ${spot(t.spot).name}` : `${first(u)} accepted · ${t.method === 'middleman' ? 'Send your item to the middleman within 48 hours' : 'Share tracking numbers in chat'}`});
+    toast(`${first(u)} accepted your offer`, 'check-circle-2');
+  }, 3200);
+}
+document.addEventListener('submit', e => {
+  if(e.target.id === 'searchForm'){
+    e.preventDefault();
+    S.disc.q = $('#q').value; S.disc.cat = 'All';
+    if(currentRoute() === 'discover') render(); else location.hash = 'discover';
+  }
+  if(e.target.id === 'chatForm'){
+    e.preventDefault();
+    const inp = $('#chatIn'), v = inp.value.trim(); if(!v) return;
+    const t = tr(S.active); addMsg(t, 'me', v); render();
+    $('#chatIn')?.focus();
+    reply(t, REPLIES[t.status] || 'Okay!');
+  }
+  if(e.target.id === 'newForm'){
+    e.preventDefault();
+    const d = S.draft;
+    if(!d.name.trim()){ toast('Add an item name first', 'alert-circle'); $('#nName').focus(); return; }
+    const it = {id:nextId++, name:d.name.trim(), cat:d.cat, set:d.set || '—', code:d.code || '—', rar:d.cat==='Figures'?'Boxed':d.cat==='Video games'?'Console':'Rare', cond:d.cond, value:+String(d.value).replace(/\D/g,'') || 0, owner:ME, hue:CAT_HUE[d.cat], kind:CAT_KIND[d.cat], foil:true, ago:'just now', open:d.open, photo:d.photo, digital:false};
+    ITEMS.push(it);
+    S.draft = {name:'', cat:'Pokémon', set:'', code:'', cond:'NM', value:'', photo:null, open:'Trade only', want:''};
+    toast(`${it.name} is listed. We are matching it now`, 'sparkles');
+    S.ptab = 'haves';
+    location.hash = 'item-' + it.id;
+  }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if(t.id === 'q' && currentRoute() === 'discover'){ S.disc.q = t.value; const pos = t.selectionStart; render(); }
+  if(t.dataset.d){ S.draft[t.dataset.d] = t.value; updatePreview(); }
+  if(t.dataset.pm){ S.pm[t.dataset.pm] = t.value; }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(t.dataset.f){ S.disc[t.dataset.f] = t.type === 'checkbox' ? t.checked : t.value; render(); }
+  if(t.dataset.d){ S.draft[t.dataset.d] = t.value; updatePreview(); }
+  if(t.dataset.pm){ S.pm[t.dataset.pm] = t.value; }
+  if(t.name === 'open'){ S.draft.open = t.value; }
+  if(t.id === 'photo' && t.files && t.files[0]){
+    const fr = new FileReader();
+    fr.onload = () => { S.draft.photo = fr.result; updatePreview(); toast('Photo added', 'image'); };
+    fr.readAsDataURL(t.files[0]);
+  }
+});
+function updatePreview(){
+  const d = S.draft, pv = $('#pvCard'); if(!pv) return;
+  pv.innerHTML = icardPreview({id:0, name:d.name || 'Your item', cat:d.cat, set:d.set || 'Set or edition', code:d.code || 'Card no.', rar:d.cat==='Figures'?'Boxed':d.cat==='Video games'?'Console':'Rare', cond:d.cond, value:+String(d.value).replace(/\D/g,'') || 0, owner:ME, hue:CAT_HUE[d.cat], kind:CAT_KIND[d.cat], foil:true, photo:d.photo});
+  icons();
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){ if(S.pm || S.rate) closeModal(); closeNotif(); }
+  if(e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); $('#q').focus(); }
+});
+window.addEventListener('scroll', () => $('#topbar').classList.toggle('scrolled', window.scrollY > 4), {passive:true});
+window.addEventListener('hashchange', onRoute);
+onRoute();
+})();
+</script>
+
+</body>
+</html>
